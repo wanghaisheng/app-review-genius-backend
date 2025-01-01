@@ -36,6 +36,26 @@ jobs:
       - name: Install all necessary packages
         run: pip install google-play-scraper app_store_scraper pandas 
 
+      - name: Sanitize input URLs to create valid artifact name
+        id: sanitize_url
+        run: |
+          # Sanitize the URLs by removing 'https://', 'www.' and replacing slashes with underscores
+          google_url=${{ github.event.inputs.google_app_package_url }}
+          apple_url=${{ github.event.inputs.apple_app_package_url }}
+          
+          # Function to sanitize URL
+          sanitize_url() {
+            echo "${1}" | sed 's/https:\/\///' | sed 's/www.//g' | sed 's/\//_/g'
+          }
+
+          # Set the artifact name based on the sanitized URL
+          google_sanitized=$(sanitize_url "${google_url}")
+          apple_sanitized=$(sanitize_url "${apple_url}")
+          
+          # Output to be used in the next step
+          echo "google_sanitized=$google_sanitized" >> $GITHUB_ENV
+          echo "apple_sanitized=$apple_sanitized" >> $GITHUB_ENV
+
       - name: Run the scraping script
         run: python reviews.py
         env:
@@ -46,6 +66,5 @@ jobs:
       - name: upload files          
         uses: actions/upload-artifact@v4
         with:
-            name: healthapps
+            name: healthapps-${{ env.google_sanitized }}-${{ env.apple_sanitized }}
             path: ./result/ # or path/to/artifact
-
