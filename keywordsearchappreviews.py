@@ -175,6 +175,7 @@ async def get_review(url, outfile, keyword):
     """
     try:
         appname, country = url.split('/')[2], url.split('/')[1]
+        print('processing',appname,country,url)
         app = AppStore(country=country, app_name=appname)
 
         await asyncio.to_thread(app.review, sleep=random.randint(1, 2))
