@@ -144,7 +144,6 @@ def getids_from_category(url, outfile):
                 appname=app_link.split('/')[-2]
                 rank = link.ele('.we-lockup__rank').text
                 title = link.ele('.we-lockup__text ').text
-
                 outfile.add_data({
                     "platform": platform,
                     "country":country,
@@ -159,6 +158,8 @@ def getids_from_category(url, outfile):
                     "title": title,
                     "updateAt": datetime.now()
                 })
+                print('add app',app_link)
+
     except Exception as e:
         print(f"Error processing category URL {url}: {e}")
 
@@ -218,15 +219,16 @@ async def main():
         for domain in DOMAIN_LIST:
             print(f"Processing domain: {domain}")
             category_urls = get_category_urls(domain)
-            print(f'category urls:{category_urls}')
+            print(f'founding category urls:{len(category_urls)}')
             category_urls=[
 
                 'https://apps.apple.com/us/charts/iphone/health-fitness-apps/6013',
             ]
             for url in category_urls:
                 getids_from_category(url, outfile)
-        print('get id ok',outfile_path)
         outfile.record()
+        print('get id ok',outfile_path)
+
         if saved1==True:
             save_csv_to_d1(outfile_path)
 # get reviews
