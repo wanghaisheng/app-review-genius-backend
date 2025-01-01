@@ -17,6 +17,66 @@ from aiohttp_socks import ProxyType, ProxyConnector, ChainProxyConnector
 from DataRecorder import Recorder
 import pandas as pd
 from getbrowser import setup_chrome
+import os
+import csv
+import requests
+
+# Environment variables
+D1_DATABASE_ID = os.getenv('D1_DATABASE_ID')  # Your Cloudflare D1 database ID
+CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')  # Your Cloudflare account ID
+CLOUDFLARE_API_TOKEN = os.getenv('CLOUDFLARE_API_TOKEN')  # Your Cloudflare API token
+CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/d1/database/{D1_DATABASE_ID}"
+
+def insert_into_d1(data):
+    """
+    Insert rows into the D1 database.
+    :param data: List of dictionaries containing rows to insert.
+    """
+    url = f"{CLOUDFLARE_BASE_URL}/query"
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    # Construct the SQL query
+    sql_query = "INSERT INTO app_data (platform, type, cid, cname, rank, appid, icon, link, title,updateAt) VALUES "
+    values = ", ".join([
+        f"('{row['platform']}', '{row['type']}', '{row['cid']}', '{row['cname']}', {row['rank']}, '{row['appid']}', '{row['icon']}', '{row['link']}', '{row['title']}','{row['updateAt']}')"
+        for row in data
+    ])
+    sql_query += values + ";"
+
+    payload = {"sql": sql_query}
+
+    # Make the API request
+    response = requests.post(url, headers=headers, json=payload)
+
+    if response.status_code == 200:
+        print("Data inserted successfully.")
+    else:
+        print(f"Failed to insert data. Response: {response.text}")
+
+def save_csv_to_d1(file_path):
+    """
+    Read a CSV file and insert its contents into the Cloudflare D1 database.
+    :param file_path: Path to the CSV file.
+    """
+    data = []
+    with open(file_path, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            data.append(row)
+
+    # Insert data into D1
+    insert_into_d1(data)
+
+# if __name__ == "__main__":
+    # result_folder = "./result"  # Change to your result folder path
+    # for file in os.listdir(result_folder):
+        # if file.startswith('top-100-app-') and file.endswith('.csv'):
+            # file_path = os.path.join(result_folder, file)
+            # print(f"Processing file: {file_path}")
+            # save_csv_to_d1(file_path)
 
 browser=setup_chrome()
 
@@ -218,7 +278,8 @@ async def main():
     tasks = []
     curls=None
     current_datetime_label = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    outfile = f'{RESULT_FOLDER}/top-100-app-{current_datetime_label}.csv'
+    outfile_filepath = f'{RESULT_FOLDER}/top-100-app-{current_datetime_label}.csv'
+    outfile=Recorder(outfile_filepath)
       
     print('post processing urls')
     for domain in DOMAIN_LIST:
@@ -228,6 +289,8 @@ async def main():
           for url in curls:
             getids_from_category(url,outfile)
     outfile.record()
+    save_csv_to_d1(outfile_filepath)
+
     print(f"Completed in {time.time() - start_time} seconds.")
 
 
