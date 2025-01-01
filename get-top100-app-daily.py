@@ -173,6 +173,8 @@ async def get_review(item, outfile):
         item['score'] = review['rating']
         item['userName'] = review['userName']
         item['review'] = review['review'].replace('\r', ' ').replace('\n', ' ')
+
+        
         outfile.add_data(item)
 
 
@@ -210,7 +212,9 @@ async def main():
             tasks = []  # List of tasks for concurrent execution
 
             # Create tasks for each row in the DataFrame
-            for index, row in df.iterrows():
+            result = df.to_dict(orient='records')
+            
+            for  row in result:
                 tasks.append(get_review(row, outfile_reviews))
 
             # Run all review tasks concurrently
