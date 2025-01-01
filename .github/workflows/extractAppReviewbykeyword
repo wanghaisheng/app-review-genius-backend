@@ -1,4 +1,4 @@
-name: ios all app reviews from keyword
+name: ios keyword all app reviews
 
 on:
   workflow_dispatch:
