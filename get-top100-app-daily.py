@@ -9,6 +9,7 @@ from DataRecorder import Recorder
 import pandas as pd
 from getbrowser import setup_chrome
 from app_store_scraper import AppStore
+import requests
 
 # Environment Variables
 D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
