@@ -132,7 +132,7 @@ def getids_from_category(url, outfile):
         country = url.split('/')[-5]
 
         for chart_type in ['chart=top-free', 'chart=top-paid']:
-            print('check urls',chart_type)
+            # print('check urls',chart_type)
             type = chart_type.split('-')[-1]
             full_url = f"{url}?{chart_type}"
             tab.get(full_url)
@@ -140,7 +140,7 @@ def getids_from_category(url, outfile):
             links = tab.ele('.l-row chart').children()
             for link in links:
                 app_link = link.ele('tag:a').link
-                print('there is aapp',app_link)                
+                # print('there is aapp',app_link)                
                 icon = link.ele('.we-lockup__overlay').ele('t:img').link
                 if app_link is None:
                     return 
@@ -148,7 +148,7 @@ def getids_from_category(url, outfile):
                 print('name',appname)
                 rank = link.ele('.we-lockup__rank').text
                 title = link.ele('.we-lockup__text ').text
-                print('try to add data')
+                # print('try to add data')
                 outfile.add_data({
                     "platform": platform,
                     "country":country,
@@ -243,7 +243,7 @@ async def main():
 
         df=pd.read_csv(outfile_path)
         lang='en'
-        for item in df.iterrows():
+        for index, row in df.iterrows():
         
             getReivew(item,outfile)
 
