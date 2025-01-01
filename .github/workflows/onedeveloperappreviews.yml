@@ -1,4 +1,4 @@
-name: ios developer app reviews release
+name: ios developer app reviews 
 
 on:
   workflow_dispatch:
