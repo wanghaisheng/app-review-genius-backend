@@ -123,6 +123,7 @@ def getids_from_category(url, outfile):
     """
     Extract app details from a category URL.
     """
+    print('get id for category url',url)
     try:
         tab = browser.new_tab()
         cid = url.split('/')[-1]
@@ -131,6 +132,7 @@ def getids_from_category(url, outfile):
         country = url.split('/')[-5]
 
         for chart_type in ['chart=top-free', 'chart=top-paid']:
+            print('check urls',chart_type)
             type = chart_type.split('-')[-1]
             full_url = f"{url}?{chart_type}"
             tab.get(full_url)
@@ -138,8 +140,10 @@ def getids_from_category(url, outfile):
             links = tab.ele('.l-row chart').children()
             for link in links:
                 app_link = link.ele('tag:a').link
+                print('there is aapp',app_link)
                 if app_link:
                     continue 
+                
                 icon = link.ele('.we-lockup__overlay').ele('t:img').link
                 appname=app_link.split('/')[-2]
                 rank = link.ele('.we-lockup__rank').text
