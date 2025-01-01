@@ -174,7 +174,7 @@ async def get_review(url, outfile, keyword):
     Asynchronously fetch reviews for the given app and save them.
     """
     try:
-        appname, country = url.split('/')[3], url.split('/')[1]
+        appname, country = url.split('/')[2], url.split('/')[1]
         app = AppStore(country=country, app_name=appname)
 
         await asyncio.to_thread(app.review, sleep=random.randint(1, 2))
