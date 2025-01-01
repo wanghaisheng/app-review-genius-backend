@@ -218,6 +218,7 @@ async def main():
         country=os.getenv('country','us')
         
         ids=getids_from_keyword(keyword,country)
+        print('all ids for keyword',keyword)
 
         if saved1:
             save_csv_to_d1(outfile_path)
