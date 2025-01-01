@@ -140,10 +140,7 @@ def getids_from_category(url, outfile):
             links = tab.ele('.l-row chart').children()
             for link in links:
                 app_link = link.ele('tag:a').link
-                print('there is aapp',app_link)
-                if app_link:
-                    continue 
-                
+                print('there is aapp',app_link)                
                 icon = link.ele('.we-lockup__overlay').ele('t:img').link
                 appname=app_link.split('/')[-2]
                 print('name',appname)
