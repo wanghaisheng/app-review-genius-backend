@@ -218,8 +218,11 @@ async def main():
         country=os.getenv('country','us')
         
         ids=getids_from_keyword(keyword,country)
+        if len(ids)==0:
+            print('we dont find app for keyword',keyword)
+            return 
         print('all ids for keyword',keyword)
-
+            
         if saved1:
             save_csv_to_d1(outfile_path)
         
