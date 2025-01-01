@@ -177,8 +177,10 @@ def getids_from_keyword(keyword,country):
             for i in links:
                 print('founding app',i.link)
                 urls.append(i.link) 
+        return urls
     except Exception as e:
         print('search app id failed',e)
+        return []
 
 async def get_review(item, outfile):
     """
