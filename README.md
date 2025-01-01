@@ -23,6 +23,10 @@ run this daily to track top 100 ios app under health category
 >get-top100-app-daily.py
 
 
+https://github.com/glennfang/apple-app-reviews-scraper
+
+
+
 
 # anaylsis 
 
