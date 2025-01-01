@@ -38,9 +38,9 @@ def insert_into_d1(data):
         "Content-Type": "application/json"
     }
 
-    sql_query = "INSERT INTO ios_app_data (platform, type, cid, cname, rank, appid, icon, link, title, updateAt) VALUES "
+    sql_query = "INSERT INTO ios_app_data (platform, type, cid, cname, rank, appid, icon, link, title, updateAt,country) VALUES "
     values = ", ".join([
-        f"('{row['platform']}', '{row['type']}', '{row['cid']}', '{row['cname']}', {row['rank']}, '{row['appid']}', '{row['icon']}', '{row['link']}', '{row['title']}', '{row['updateAt']}')"
+        f"('{row['platform']}', '{row['type']}', '{row['cid']}', '{row['cname']}', {row['rank']}, '{row['appid']}', '{row['icon']}', '{row['link']}', '{row['title']}', '{row['updateAt']}','{row['country']}')"
         for row in data
     ])
     sql_query += values + ";"
@@ -125,6 +125,7 @@ def getids_from_category(url, outfile):
         cid = url.split('/')[-1]
         cname = url.split('/')[-2]
         platform = url.split('/')[-3]
+        country = url.split('/')[-4]
 
         for chart_type in ['chart=top-free', 'chart=top-paid']:
             type = chart_type.split('-')[-1]
@@ -140,6 +141,7 @@ def getids_from_category(url, outfile):
 
                 outfile.add_data({
                     "platform": platform,
+                    "country":country,
                     "type": type,
                     "cid": cid,
                     "cname": cname,
