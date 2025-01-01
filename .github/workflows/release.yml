@@ -1,4 +1,4 @@
-name: appstorereviews release
+name: get 1 ios app review
 
 on:
   workflow_dispatch:
