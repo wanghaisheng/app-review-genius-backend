@@ -192,7 +192,7 @@ async def get_urls_from_archive(domain, start, end):
     except Exception as e:
         print(f"Error fetching archive URLs for {domain}: {e}")
 
-def getReivew(item,outfile)
+def getReivew(item,outfile):
     app = AppStore(country=item['country'],app_name=item['appname'])
     app.review(sleep = random.randint(3,6))
     for review in app.reviews:
@@ -232,7 +232,7 @@ async def main():
         lang='en'
         for item in df.iterrows():
         
-            app_store_scraper(item,lang)
+            app_store_scraper(item,outfile)
 
         outfile_reviews.record()
 
