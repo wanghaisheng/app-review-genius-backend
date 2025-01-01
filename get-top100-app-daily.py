@@ -142,6 +142,8 @@ def getids_from_category(url, outfile):
                 app_link = link.ele('tag:a').link
                 print('there is aapp',app_link)                
                 icon = link.ele('.we-lockup__overlay').ele('t:img').link
+                if app_link is None:
+                    return 
                 appname=app_link.split('/')[-2]
                 print('name',appname)
                 rank = link.ele('.we-lockup__rank').text
