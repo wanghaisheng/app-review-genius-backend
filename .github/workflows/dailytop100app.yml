@@ -32,10 +32,9 @@ jobs:
 
       - name: Create release
         id: create_release
-        uses: actions/create-release@v1
+        uses: actions/create-release@v2  # Update to v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        
         with:
           tag_name: app-store-data-${{ github.run_number }}
           release_name: App Store Data
@@ -44,7 +43,7 @@ jobs:
           body: "Results of App Store data processing."
 
       - name: Upload artifacts to release
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2  # Update to v2
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./result/top-100-app-*.csv
