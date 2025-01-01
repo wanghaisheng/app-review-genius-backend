@@ -163,14 +163,42 @@ def getids_from_category(url, outfile):
 
 def get_ids_from_developer_page(url):
   # https://apps.apple.com/cn/developer/learn-for-fun-limited/id1480793728
-async def get_review(item, outfile):
+    # https://apps.apple.com/us/developer/life-church/id282935709
+    baseurl=url.split('developer')[0]
+    urls=[]
+    if 'developer' in url:
+        try:
+            tab = browser.new_tab()
+            tab.get(url)
+            print('detect apps')
+            links=tab.ele(f'@href^{baseurl}')
+            if links:
+                for i in links
+                    urls.append(i.link)
+            return urls
+        except Exception as e:
+            print(f"Error fetching app URLs for {url}: {e}")
+            return []
+
+    
+async def get_review(id, outfile,developer):
     """
     Asynchronously fetch the review for the given app and save it to the outfile.
     """
-    app = AppStore(country=item['country'], app_name=item['appname'])
+    # https://apps.apple.com/us/app/bible/id282935706
+    url=id.replace('https://','')
+    appname=url.split('/')[3]
+    country=id.split('/')[1]
+    
+    app = AppStore(country=country, app_name=appname)
     await asyncio.to_thread(app.review, sleep=random.randint(3, 6))  # Run in a separate thread to avoid blocking
 
     for review in app.reviews:
+        item={
+            "appname":appname,
+            "country":country,
+            "developer":developer
+        }
         item['score'] = review['rating']
         item['userName'] = review['userName']
         item['review'] = review['review'].replace('\r', ' ').replace('\n', ' ')
@@ -189,39 +217,27 @@ async def main():
         os.makedirs(RESULT_FOLDER, exist_ok=True)
         current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
-        outfile_path = f'{RESULT_FOLDER}/top-100-app-{current_time}.csv'
-        outfile = Recorder(outfile_path)
-        
-        for domain in DOMAIN_LIST:
-            print(f"Processing domain: {domain}")
-            category_urls = get_category_urls(domain)
-            print(f'found category urls: {len(category_urls)}')
-            for url in category_urls:
-                getids_from_category(url, outfile)
-        outfile.record()
-        print('get id ok', outfile_path)
-
-        if saved1:
-            save_csv_to_d1(outfile_path)
-        
+    
+        # if saved1:
+            # save_csv_to_d1(outfile_path)
+        ids=get_ids_from_developer_page(url)        
+        developername=url.replace('https://','').replace('/','-')
+        developer=url.replace('https://','').split('/')[3]
         # Get reviews concurrently
-        if downloadreview:
-            outfile_reviews_path = f'{RESULT_FOLDER}/top-100-app-reviews-{current_time}.csv'
-            outfile_reviews = Recorder(outfile_reviews_path)
+        outfile_reviews_path = f'{RESULT_FOLDER}/{developername}-all-app-reviews-{current_time}.csv'
+        outfile_reviews = Recorder(outfile_reviews_path)
 
-            df = pd.read_csv(outfile_path)[:1]
-            tasks = []  # List of tasks for concurrent execution
+        tasks = []  # List of tasks for concurrent execution
 
             # Create tasks for each row in the DataFrame
-            result = df.to_dict(orient='records')
             
-            for  row in result:
-                tasks.append(get_review(row, outfile_reviews))
+        for  id in ids:
+            tasks.append(get_review(id, outfile_reviews,developer))
 
             # Run all review tasks concurrently
-            await asyncio.gather(*tasks)
+        await asyncio.gather(*tasks)
 
-            outfile_reviews.record()
+        outfile_reviews.record()
 
     except Exception as e:
         print(f"Error in main execution: {e}")
