@@ -139,7 +139,7 @@ def getids_from_category(url, outfile):
             for link in links:
                 app_link = link.ele('tag:a').link
                 if app_link:
-                    return 
+                    continue 
                 icon = link.ele('.we-lockup__overlay').ele('t:img').link
                 appname=app_link.split('/')[-2]
                 rank = link.ele('.we-lockup__rank').text
@@ -225,6 +225,7 @@ async def main():
             ]
             for url in category_urls:
                 getids_from_category(url, outfile)
+        print('get id ok',outfile_path)
         outfile.record()
         if saved1==True:
             save_csv_to_d1(outfile_path)
