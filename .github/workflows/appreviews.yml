@@ -1,4 +1,4 @@
-name: appstorereviews
+name: get one app review from url
 on:
   workflow_dispatch:
     inputs:
