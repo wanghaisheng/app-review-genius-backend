@@ -182,7 +182,7 @@ def getids_from_keyword(keyword,country):
         print('search app id failed',e)
         return []
 
-async def get_review(item, outfile):
+async def get_review(item, outfile,keyword):
     """
     Asynchronously fetch the review for the given app and save it to the outfile.
     """
@@ -198,10 +198,12 @@ async def get_review(item, outfile):
         item={
             "appname":appname,
             "country":country,
-            "developer":developer
+            "keyword":keyword
         }        
         item['score'] = review['rating']
         item['userName'] = review['userName']
+        item['date'] = review['date']
+
         item['review'] = review['review'].replace('\r', ' ').replace('\n', ' ')
 
         
@@ -240,7 +242,7 @@ async def main():
 
             
             for  id in ids:
-                tasks.append(get_review(id, outfile_reviews,developer))
+                tasks.append(get_review(id, outfile_reviews,keyword))
             batch_size=3
             for i in range(0, len(tasks), batch_size):
                 batch = tasks[i:i + batch_size]  # Get a slice of tasks for the current batch
