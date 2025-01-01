@@ -1,5 +1,5 @@
 
-name: search appid from app name
+name: get app review from app name
 on:
   workflow_dispatch:
     inputs:
