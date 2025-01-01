@@ -215,7 +215,7 @@ async def main():
 
         outfile_path = f'{RESULT_FOLDER}/top-100-app-{current_time}.csv'
         outfile = Recorder(outfile_path)
-
+        outfile.add_data({})
         for domain in DOMAIN_LIST:
             print(f"Processing domain: {domain}")
             category_urls = get_category_urls(domain)
