@@ -146,6 +146,7 @@ def getids_from_category(url, outfile):
                 
                 icon = link.ele('.we-lockup__overlay').ele('t:img').link
                 appname=app_link.split('/')[-2]
+                print('name',appname)
                 rank = link.ele('.we-lockup__rank').text
                 title = link.ele('.we-lockup__text ').text
                 print('try to add data')
