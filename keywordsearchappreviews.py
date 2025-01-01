@@ -169,11 +169,14 @@ def getids_from_keyword(keyword,country):
         url=f'https://www.apple.com/{country}/search/{keyword}?src=serp'
         tab.get(url)
         urls=[]
+        print('go to developer home url')
         baseurl=f"https://apps.apple.com/{country}/app"
         links=tab.eles(f'@href^{baseurl}')
+        print('detect app url in page')
         if links:
             for i in links:
-               urls.append(i.link) 
+                print('founding app',i.link)
+                urls.append(i.link) 
     except Exception as e:
         print('search app id failed',e)
 
@@ -218,7 +221,7 @@ async def main():
         country=os.getenv('country','us')
         
         ids=getids_from_keyword(keyword,country)
-        if len(ids)==0:
+        if ids and len(ids)==0:
             print('we dont find app for keyword',keyword)
             return 
         print('all ids for keyword',keyword)
