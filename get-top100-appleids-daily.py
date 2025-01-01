@@ -12,6 +12,7 @@ import os
 import csv
 import time
 import asyncio
+from datetime import datetime
 from aiohttp_socks import ProxyType, ProxyConnector, ChainProxyConnector
 from DataRecorder import Recorder
 import pandas as pd
@@ -72,10 +73,10 @@ def getids_from_category(url,outfile):
   tab=browser.new_tab()
   cid=url.split('/')[-1]
   cname=url.split('/')[-2]
-  type=url.split('/')[-3]
+  platform=url.split('/')[-3]
   
   for c in ['chart=top-free','chart=top-paid']:
-    
+    type=c.split('-')[-1]
     url=url+'?'+c
     tab.get(url)
     links=tab.ele('.l-row chart').children()
@@ -86,6 +87,7 @@ def getids_from_category(url,outfile):
       title=l.ele('.we-lockup__title').text
       outfile.add_data(
         {
+        "platform":platform,
         'type':tpye,
           "cid":cid,
           "cname":cname,
@@ -93,7 +95,8 @@ def getids_from_category(url,outfile):
           "appid":link.split('/')[-1],
          "icon":icon,
           "link":link,
-          "title":title
+          "title":title,
+          "updateAt":datetime.now()
         }
       )
   
