@@ -148,6 +148,7 @@ def getids_from_category(url, outfile):
                 appname=app_link.split('/')[-2]
                 rank = link.ele('.we-lockup__rank').text
                 title = link.ele('.we-lockup__text ').text
+                print('try to add data')
                 outfile.add_data({
                     "platform": platform,
                     "country":country,
