@@ -191,7 +191,7 @@ async def get_review(id, outfile,developer):
     country=id.split('/')[1]
     
     app = AppStore(country=country, app_name=appname)
-    await asyncio.to_thread(app.review, sleep=random.randint(3, 6))  # Run in a separate thread to avoid blocking
+    await asyncio.to_thread(app.review, sleep=random.randint(1, 2))  # Run in a separate thread to avoid blocking
 
     for review in app.reviews:
         item={
