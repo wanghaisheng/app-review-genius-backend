@@ -126,7 +126,7 @@ def getids_from_category(url, outfile):
         cid = url.split('/')[-1]
         cname = url.split('/')[-2]
         platform = url.split('/')[-3]
-        country = url.split('/')[-4]
+        country = url.split('/')[-5]
 
         for chart_type in ['chart=top-free', 'chart=top-paid']:
             type = chart_type.split('-')[-1]
