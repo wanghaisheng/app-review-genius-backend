@@ -27,7 +27,7 @@ jobs:
           python-version: '3.9'
 
       - name: Install all necessary packages
-        run: pip install google-play-scraper app_store_scraper pandas 
+        run: pip install google-play-scraper aiohttp aiohttp_socks DataRecorder pandas DrissionPage python-dotenv app_store_scraper requests
 
         
       - name: Run the scraping script
