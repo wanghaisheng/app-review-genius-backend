@@ -25,7 +25,7 @@ jobs:
 
       - name: Run scraper and save results
         run: |
-          python main.py
+          python get-top100-app-daily.py
         env:
           RESULT_FOLDER: ./result  # Adjust if necessary
           OUTPUT_FOLDER: ./output
