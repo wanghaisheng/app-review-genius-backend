@@ -222,6 +222,7 @@ async def main():
                 'https://apps.apple.com/us/charts/iphone/health-fitness-apps/6013',
             ]
             for url in category_urls:
+                print('proccessing url',url)
                 getids_from_category(url, outfile)
         outfile.record()
 # get reviews
