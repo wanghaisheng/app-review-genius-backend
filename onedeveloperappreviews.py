@@ -220,6 +220,14 @@ async def main():
     
         # if saved1:
             # save_csv_to_d1(outfile_path)
+        url=os.getenv('url','')
+        if url is None:
+            print('please provide valid developer profile')
+            return 
+        if '/developer/' not in url:
+            print('please provide valid developer profile')
+            return 
+            
         ids=get_ids_from_developer_page(url)        
         developername=url.replace('https://','').replace('/','-')
         developer=url.replace('https://','').split('/')[3]
