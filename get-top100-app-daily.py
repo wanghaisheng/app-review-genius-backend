@@ -8,7 +8,7 @@ from aiohttp_socks import ProxyType, ProxyConnector, ChainProxyConnector
 from DataRecorder import Recorder
 import pandas as pd
 from getbrowser import setup_chrome
-from SearchAppId import SearchAppId
+from searchappid import SearchAppId
 from app_store_scraper import AppStore
 import requests
 import random
