@@ -172,6 +172,7 @@ async def get_review(item, outfile):
     for review in app.reviews:
         item['score'] = review['rating']
         item['userName'] = review['userName']
+        item['date']=review['date']
         item['review'] = review['review'].replace('\r', ' ').replace('\n', ' ')
 
         
