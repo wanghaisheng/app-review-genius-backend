@@ -193,14 +193,15 @@ async def main():
     """
     try:
         os.makedirs(RESULT_FOLDER, exist_ok=True)
+        current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+
+        outfile_path = f'{RESULT_FOLDER}/top-100-app-{current_time}.csv'
+        outfile = Recorder(outfile_path)
 
         for domain in DOMAIN_LIST:
             # print(f"Processing domain: {domain}")
             # category_urls = get_category_urls(domain)
             # print(f'category urls:{category_urls}')
-            current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-            outfile_path = f'{RESULT_FOLDER}/top-100-app-{current_time}.csv'
-            outfile = Recorder(outfile_path)
             category_urls=[
 
                 'https://apps.apple.com/us/charts/iphone/health-fitness-apps/6013',
@@ -208,8 +209,7 @@ async def main():
             for url in category_urls:
                 getids_from_category(url, outfile)
 
-            outfile.record()
-            # save_csv_to_d1(outfile_path)
+        outfile.record()
 
     except Exception as e:
         print(f"Error in main execution: {e}")
