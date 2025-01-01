@@ -15,6 +15,9 @@ import asyncio
 from aiohttp_socks import ProxyType, ProxyConnector, ChainProxyConnector
 from DataRecorder import Recorder
 import pandas as pd
+from getbrowser import setup_chrome
+
+browser=setup_chrome()
 
 # Constants
 PROXY_URL = None
@@ -42,7 +45,58 @@ def process_line(csv_file, lines):
         except Exception as e:
             print(f"Failed to process line: {line}, Error: {e}")
 
+def get_category_urls(domain):
+  tab=browser.new_tab()
+  domainname = domain.replace("https://", "")
+  domainname=domainname.replace('/','-')
+  
+  tab.get(domain)
+  buttons=tab.ele('.we-genre-filter__triggers-list').eles('t:button')
+  csv_filepath = f'{RESULT_FOLDER}/top-app-category-{domainname}.csv'
+  csv_file=Recorder(csv_filepath)
 
+  curls=[]
+  for b in buttons:
+    b.click()
+    appc=tab.ele('.we-genre-filter__categories-list l-content-width')
+    links=appc.children()
+    for a in links:
+      url=a.link
+      if url and 'href="https://apps.apple.com/us/charts' in url:
+        csv_file.add_data(url)
+        curls.append(url)
+    csv_file.record()
+    return curls
+def getids_from_category(url,outfile):
+  # https://apps.apple.com/us/charts/ipad/navigation-apps/6010?
+  tab=browser.new_tab()
+  cid=url.split('/')[-1]
+  cname=url.split('/')[-2]
+  type=url.split('/')[-3]
+  
+  for c in ['chart=top-free','chart=top-paid']:
+    
+    url=url+'?'+c
+    tab.get(url)
+    links=tab.ele('.l-row chart').children()
+    for l in links:
+      link=l.ele('tag:a').link
+      icon=l.ele('.we-lockup__overlay').ele('t:img').link
+      rank=l.ele('.we-lockup__rank').text
+      title=l.ele('.we-lockup__title').text
+      outfile.add_data(
+        {
+        'type':tpye,
+          "cid":cid,
+          "cname":cname,
+        "rank":rank,
+          "appid":link.split('/')[-1],
+         "icon":icon,
+          "link":link,
+          "title":title
+        }
+      )
+  
 async def get_urls_from_archive(domain, start, end):
     """Fetch URLs from the Wayback Machine."""
     subs_wildcard = "*."
@@ -159,17 +213,18 @@ async def main():
     year_pairs = [(start_year + i, start_year + i + 1) for i in range(end_year - start_year)] if start_year != end_year else [(start_year, None)]
     
     tasks = []
-    for domain in DOMAIN_LIST:
-        for pair in year_pairs:
-            print(f"Adding domain {domain} to tasks")
-            task = asyncio.create_task(fetch_urls_for_domain(domain, pair[0], pair[1]))
-            tasks.append(task)
-
-    await asyncio.gather(*tasks)
+    curls=None
+    current_datetime_label = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    outfile = f'{RESULT_FOLDER}/top-100-app-{current_datetime_label}.csv'
+      
     print('post processing urls')
     for domain in DOMAIN_LIST:
-        extract_urls(domain)
-
+        curls=get_category_urls(domain)
+      
+        if len(curls)>0:
+          for url in curls:
+            getids_from_category(url,outfile)
+    outfile.record()
     print(f"Completed in {time.time() - start_time} seconds.")
 
 
