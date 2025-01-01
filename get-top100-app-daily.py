@@ -10,7 +10,7 @@ import pandas as pd
 from getbrowser import setup_chrome
 from app_store_scraper import AppStore
 import requests
-
+import random
 # Environment Variables
 D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
@@ -40,9 +40,9 @@ def insert_into_d1(data):
         "Content-Type": "application/json"
     }
 
-    sql_query = "INSERT INTO ios_app_data (platform, type, cid, cname, rank, appid, icon, link, title, updateAt,country) VALUES "
+    sql_query = "INSERT INTO ios_app_data (platform, type, cid, cname, rank, appid,appname, icon, link, title, updateAt,country) VALUES "
     values = ", ".join([
-        f"('{row['platform']}', '{row['type']}', '{row['cid']}', '{row['cname']}', {row['rank']}, '{row['appid']}', '{row['icon']}', '{row['link']}', '{row['title']}', '{row['updateAt']}','{row['country']}')"
+        f"('{row['platform']}', '{row['type']}', '{row['cid']}', '{row['cname']}', {row['rank']}, '{row['appid']}','{row['appname']}' '{row['icon']}', '{row['link']}', '{row['title']}', '{row['updateAt']}','{row['country']}')"
         for row in data
     ])
     sql_query += values + ";"
@@ -206,6 +206,8 @@ async def main():
     """
     Main entry point for asynchronous execution.
     """
+    saved1=False
+    downloadreview=True
     try:
         os.makedirs(RESULT_FOLDER, exist_ok=True)
         current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
@@ -222,18 +224,21 @@ async def main():
                 'https://apps.apple.com/us/charts/iphone/health-fitness-apps/6013',
             ]
             for url in category_urls:
-                print('proccessing url',url)
                 getids_from_category(url, outfile)
         outfile.record()
+        if saved1==True:
+            save_csv_to_d1(outfile_path)
 # get reviews
         outfile_reviews_path = f'{RESULT_FOLDER}/top-100-app-reviews-{current_time}.csv'
         outfile_reviews = Recorder(outfile_reviews_path)
+        if downloadreview==False:
+            return 
 
         df=pd.read_csv(outfile_path)
         lang='en'
         for item in df.iterrows():
         
-            app_store_scraper(item,outfile)
+            getReivew(item,outfile)
 
         outfile_reviews.record()
 
