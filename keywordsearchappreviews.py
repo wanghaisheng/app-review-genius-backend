@@ -231,9 +231,13 @@ async def main():
             
             for  id in ids:
                 tasks.append(get_review(id, outfile_reviews,developer))
+            batch_size=3
+            for i in range(0, len(tasks), batch_size):
+                batch = tasks[i:i + batch_size]  # Get a slice of tasks for the current batch
+                await asyncio.gather(*batch)  # Execute the batch concurrently
 
             # Run all review tasks concurrently
-            await asyncio.gather(*tasks)
+            # await asyncio.gather(*tasks)
 
             outfile_reviews.record()
 
