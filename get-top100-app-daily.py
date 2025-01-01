@@ -245,7 +245,7 @@ async def main():
         lang='en'
         for index, row in df.iterrows():
         
-            getReivew(item,outfile)
+            getReivew(row,outfile)
 
         outfile_reviews.record()
 
