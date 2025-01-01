@@ -178,7 +178,8 @@ async def get_review(url, outfile, keyword):
         print('processing',appname,country,url)
         app = AppStore(country=country, app_name=appname)
 
-        await asyncio.to_thread(app.review, sleep=random.randint(1, 2))
+        # await asyncio.to_thread(app.review, sleep=random.randint(1, 2))
+        print('aall review')
         for review in app.reviews:
             outfile.add_data({
                 "appname": appname,
