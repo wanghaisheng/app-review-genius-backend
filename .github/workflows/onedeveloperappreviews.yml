@@ -1,0 +1,42 @@
+name: ios developer app reviews release
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'profile link https://apps.apple.com/us/developer/monkey-taps/id1450092715 '
+        type: string
+        required: False
+        default: 'https://apps.apple.com/us/developer/monkey-taps/id1450092715'
+      action:
+        description: 'Choose action: "commit" to commit to repo, "upload" to upload to release'
+        type: string
+        required: False
+        default: 'upload'  # Default action is commit
+
+jobs:
+  scrape_and_email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this repo
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install all necessary packages
+        run: pip install google-play-scraper app_store_scraper pandas 
+
+        
+      - name: Run the scraping script
+        run: python onedeveloperappreviews.py
+        env:
+          url: ${{ github.event.inputs.url }}          
+
+      - name: upload files          
+        uses: actions/upload-artifact@v4
+        with:
+            name: healthapps-${{ env.keyword }}
+            path: ./result/ # or path/to/artifact
