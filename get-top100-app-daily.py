@@ -10,7 +10,7 @@ import pandas as pd
 from getbrowser import setup_chrome
 
 # Environment Variables
-D1_DATABASE_ID = os.getenv('D1_DATABASE_ID')
+D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
 CLOUDFLARE_API_TOKEN = os.getenv('CLOUDFLARE_API_TOKEN')
 CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/d1/database/{D1_DATABASE_ID}"
@@ -38,7 +38,7 @@ def insert_into_d1(data):
         "Content-Type": "application/json"
     }
 
-    sql_query = "INSERT INTO app_data (platform, type, cid, cname, rank, appid, icon, link, title, updateAt) VALUES "
+    sql_query = "INSERT INTO ios_app_data (platform, type, cid, cname, rank, appid, icon, link, title, updateAt) VALUES "
     values = ", ".join([
         f"('{row['platform']}', '{row['type']}', '{row['cid']}', '{row['cname']}', {row['rank']}, '{row['appid']}', '{row['icon']}', '{row['link']}', '{row['title']}', '{row['updateAt']}')"
         for row in data
