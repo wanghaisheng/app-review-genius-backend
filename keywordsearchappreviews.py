@@ -166,7 +166,8 @@ def getids_from_keyword(keyword,country):
     try:
         tab = browser.new_tab()
         # https://www.apple.com/us/search/bible-chat?src=serp
-        url=f'https://www.apple.com/{country}/search/{keyword.replace(' ','-')}?src=serp'
+        keyword=keyword.replace(' ','-')
+        url=f'https://www.apple.com/{country}/search/{keyword}?src=serp'
         tab.get(url)
         urls=[]
         baseurl=f"https://apps.apple.com/{country}/app"
