@@ -93,7 +93,7 @@ def get_category_urls(domain):
         tab = browser.new_tab()
         domainname = domain.replace("https://", "").replace('/', '-')
         tab.get(domain)
-
+        print('click app or game button')
         buttons = tab.ele('.we-genre-filter__triggers-list').eles('t:button')
         csv_filepath = f'{RESULT_FOLDER}/top-app-category-{domainname}.csv'
         csv_file = Recorder(csv_filepath)
@@ -101,11 +101,12 @@ def get_category_urls(domain):
         curls = []
         for button in buttons:
             button.click()
+            print('detect c url')
             appc = tab.ele('.we-genre-filter__categories-list l-content-width')
             links = appc.children()
             for a in links:
                 url = a.link
-                if url and 'href="https://apps.apple.com/us/charts' in url:
+                if url and 'https://apps.apple.com/us/charts' in url:
                     csv_file.add_data(url)
                     curls.append(url)
 
@@ -194,17 +195,21 @@ async def main():
         os.makedirs(RESULT_FOLDER, exist_ok=True)
 
         for domain in DOMAIN_LIST:
-            print(f"Processing domain: {domain}")
-            category_urls = get_category_urls(domain)
+            # print(f"Processing domain: {domain}")
+            # category_urls = get_category_urls(domain)
+            # print(f'category urls:{category_urls}')
             current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
             outfile_path = f'{RESULT_FOLDER}/top-100-app-{current_time}.csv'
             outfile = Recorder(outfile_path)
+            category_urls=[
 
+                'https://apps.apple.com/us/charts/iphone/health-fitness-apps/6013',
+            ]
             for url in category_urls:
                 getids_from_category(url, outfile)
 
             outfile.record()
-            save_csv_to_d1(outfile_path)
+            # save_csv_to_d1(outfile_path)
 
     except Exception as e:
         print(f"Error in main execution: {e}")
