@@ -30,7 +30,7 @@ jobs:
           RESULT_FOLDER: ./result  # Adjust if necessary
           OUTPUT_FOLDER: ./output
       - name: upload files          
-      - uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
             name: healthapps
             path: ./result/ # or path/to/artifact
