@@ -30,7 +30,7 @@ OUTPUT_FOLDER = "./output"
 browser = setup_chrome()
 
 
-def insert_into_d1(data):
+def insert_into_top100_rank(data):
     """
     Insert rows into the D1 database.
     """
@@ -40,7 +40,7 @@ def insert_into_d1(data):
         "Content-Type": "application/json"
     }
 
-    sql_query = "INSERT INTO ios_app_data (platform, type, cid, cname, rank, appid, appname, icon, link, title, updateAt, country) VALUES "
+    sql_query = "INSERT INTO ios_top100_app_data (platform, type, cid, cname, rank, appid, appname, icon, link, title, updateAt, country) VALUES "
     values = ", ".join([f"('{row['platform']}', '{row['type']}', '{row['cid']}', '{row['cname']}', {row['rank']}, '{row['appid']}','{row['appname']}', '{row['icon']}', '{row['link']}', '{row['title']}', '{row['updateAt']}','{row['country']}')" for row in data])
     sql_query += values + ";"
 
@@ -64,7 +64,7 @@ def save_csv_to_d1(file_path):
             reader = csv.DictReader(f)
             for row in reader:
                 data.append(row)
-        insert_into_d1(data)
+        insert_into_top100_rank(data)
     except Exception as e:
         print(f"Error reading CSV file '{file_path}': {e}")
 
