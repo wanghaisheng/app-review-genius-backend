@@ -11,7 +11,7 @@ from getbrowser import setup_chrome
 from app_store_scraper import AppStore
 import requests
 import pandas as pd
-
+from apicall import get_token,fetch_reviews
 # Environment Variables
 D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
@@ -174,13 +174,37 @@ async def get_review(url, outfile, keyword):
     Asynchronously fetch reviews for the given app and save them.
     """
     try:
-        appname, country = url.split('/')[2], url.split('/')[1]
+        appname, country = url.split('/')[-2], url.split('/')[-4]
+        app_id=url.split('/')[-1]
+        
         print('processing',appname,country,url)
+        all_reviews = []
+        
         app = AppStore(country=country, app_name=appname)
 
-        # await asyncio.to_thread(app.review, sleep=random.randint(1, 2))
+        await asyncio.to_thread(app.review, sleep=random.randint(1, 2))
+        all_reviews=app.reviews
+        if len(all_reviews)==0 or all_reviews is None:
+            user_agents = [
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+    ]
+
+            token = get_token(country, app_name, app_id, user_agents)
+            
+            offset = '1'
+            MAX_REVIEWS = 100+21
+            while (offset != None) and (int(offset) <= MAX_REVIEWS):
+                reviews, offset, response_code = fetch_reviews(country=country, 
+                                                       app_name=app_name, 
+                                                       user_agents=user_agents, 
+                                                       app_id=app_id, 
+                                                       token=token, 
+                                                       offset=offset)
+                all_reviews.extend(reviews)
+
         print('aall review')
-        for review in app.reviews:
+        for review in all_reviews:
             outfile.add_data({
                 "appname": appname,
                 "country": country,
