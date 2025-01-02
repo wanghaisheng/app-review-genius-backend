@@ -183,8 +183,8 @@ async def main():
     """
     Main entry point for asynchronous execution.
     """
-    saved1 = False
-    downloadreview = True
+    saved1 = True
+    downloadreview = False
     try:
         os.makedirs(RESULT_FOLDER, exist_ok=True)
         current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
