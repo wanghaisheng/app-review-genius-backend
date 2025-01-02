@@ -209,7 +209,7 @@ async def main():
             outfile_reviews_path = f'{RESULT_FOLDER}/top-100-app-reviews-{current_time}.csv'
             outfile_reviews = Recorder(outfile_reviews_path)
 
-            df = pd.read_csv(outfile_path)[:1]
+            df = pd.read_csv(outfile_path)
             tasks = []  # List of tasks for concurrent execution
 
             # Create tasks for each row in the DataFrame
