@@ -193,7 +193,7 @@ async def get_review(url, outfile, keyword):
             token = get_token(country, app_name, app_id, user_agents)
             
             offset = '1'
-            MAX_REVIEWS = 100+21
+            MAX_REVIEWS = 100000+21
             while (offset != None) and (int(offset) <= MAX_REVIEWS):
                 reviews, offset, response_code = fetch_reviews(country=country, 
                                                        app_name=app_name, 
