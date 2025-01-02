@@ -112,8 +112,9 @@ def app_reviews():
                     apple_app_package_url=apple_app_package_url.split('?')[0]
                 
                 apple_app_package_name=apple_app_package_url.split('/')[-2]
-                if not len(apple_app_package_name)>0:
-                    print('not support package,',apple_app_package_url,apple_app_package_name)        
+                if  len(apple_app_package_name)==0:
+                    print('not support package,',apple_app_package_url,apple_app_package_name) 
+                    return 
                 app_store_scraper(apple_app_package_name,country,lang)
                     
         except:
