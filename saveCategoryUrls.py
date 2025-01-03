@@ -1,3 +1,12 @@
+import requests
+import os
+from urllib.parse import urlparse
+
+D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
+CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
+CLOUDFLARE_API_TOKEN = os.getenv('CLOUDFLARE_API_TOKEN')
+CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/d1/database/{D1_DATABASE_ID}"
+
 def create_category_urls_table():
     """
     Create the ios_top100_category_urls table if it does not exist in the D1 database.
@@ -29,10 +38,9 @@ def create_category_urls_table():
     except requests.RequestException as e:
         print(f"Failed to create table: {e}")
 
-
-def save_category_urls_to_d1(category_urls, platform, country, cid, cname):
+def save_category_urls_to_d1(category_urls):
     """
-    Save category URLs to the D1 database with platform, country, cid, and cname.
+    Save category URLs to the D1 database.
     """
     url = f"{CLOUDFLARE_BASE_URL}/query"
     headers = {
@@ -40,10 +48,19 @@ def save_category_urls_to_d1(category_urls, platform, country, cid, cname):
         "Content-Type": "application/json"
     }
 
-    # Construct the SQL query to insert data
+    values = []
+    for category_url in category_urls:
+        parsed_url = urlparse(category_url)
+        path_parts = parsed_url.path.split('/')
+        platform = path_parts[-3]
+        country = path_parts[-5]
+        cid = path_parts[-1]
+        cname = path_parts[-2]
+
+        values.append(f"('{platform}', '{country}', '{cid}', '{cname}', '{category_url}')")
+
     sql_query = "INSERT INTO ios_top100_category_urls (platform, country, cid, cname, url) VALUES "
-    values = ", ".join([f"('{platform}', '{country}', '{cid}', '{cname}', '{url}')" for url in category_urls])
-    sql_query += values + ";"
+    sql_query += ", ".join(values) + ";"
 
     payload = {"sql": sql_query}
 
@@ -53,3 +70,13 @@ def save_category_urls_to_d1(category_urls, platform, country, cid, cname):
         print("Category URLs inserted successfully.")
     except requests.RequestException as e:
         print(f"Failed to insert category URLs: {e}")
+
+# Example usage
+create_category_urls_table()
+
+category_urls = [
+    "https://www.example.com/us/ios/appstore/category/123/Adventure",
+    "https://www.example.com/uk/ios/appstore/category/456/Action",
+    "https://www.example.com/us/ios/appstore/category/789/Puzzle"
+]
+save_category_urls_to_d1(category_urls)
