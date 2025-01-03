@@ -160,7 +160,7 @@ def getids_from_category(url, outfile):
                     "title": title,
                     "updateAt": datetime.now()
                 }
-                out_file.add_data(item)
+                outfile.add_data(item)
                 print('add app', app_link)
                 insert_into_top100rank([item])
     except Exception as e:
