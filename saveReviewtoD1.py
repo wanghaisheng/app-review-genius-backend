@@ -1,6 +1,9 @@
 import hashlib
 import requests
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
