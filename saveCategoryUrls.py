@@ -47,6 +47,8 @@ def save_category_urls_to_d1(category_urls):
         "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
         "Content-Type": "application/json"
     }
+    create_category_urls_table()
+
 
     values = []
     for category_url in category_urls:
@@ -72,11 +74,11 @@ def save_category_urls_to_d1(category_urls):
         print(f"Failed to insert category URLs: {e}")
 
 # Example usage
-create_category_urls_table()
+# create_category_urls_table()
 
 category_urls = [
     "https://www.example.com/us/ios/appstore/category/123/Adventure",
     "https://www.example.com/uk/ios/appstore/category/456/Action",
     "https://www.example.com/us/ios/appstore/category/789/Puzzle"
 ]
-save_category_urls_to_d1(category_urls)
+# save_category_urls_to_d1(category_urls)
