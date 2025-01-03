@@ -5,8 +5,11 @@ from DataRecorder import Recorder
 from getbrowser import setup_chrome
 
 # Constants for D1 Database
-CLOUDFLARE_BASE_URL = "https://api.cloudflare.com/client/v4/accounts/<your-account-id>/d1/database/<your-database-id>"
-CLOUDFLARE_API_TOKEN = "<your-cloudflare-api-token>"
+D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
+CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
+CLOUDFLARE_API_TOKEN = os.getenv('CLOUDFLARE_API_TOKEN')
+
+CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/d1/database/{D1_DATABASE_ID}"
 
 # Initialize Browser
 browser = setup_chrome()
@@ -22,7 +25,7 @@ def create_app_profiles_table():
     }
 
     sql_query = """
-    CREATE TABLE IF NOT EXISTS app_profiles (
+    CREATE TABLE IF NOT EXISTS ios_app_profiles (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         appid TEXT NOT NULL,
         appname TEXT NOT NULL,
@@ -63,7 +66,7 @@ def save_app_profile_to_d1(app_data):
     }
 
     sql_query = """
-    INSERT INTO app_profiles (appid, appname, country, releasedate, version, seller, size, category, lang, age, copyright, pricetype, priceplan)
+    INSERT INTO ios_app_profiles (appid, appname, country, releasedate, version, seller, size, category, lang, age, copyright, pricetype, priceplan)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     """
     
