@@ -24,11 +24,15 @@ jobs:
           pip install aiohttp aiohttp_socks DataRecorder pandas DrissionPage python-dotenv app_store_scraper requests
 
       - name: Run scraper and save results
-        run: |
-          python get-top100-app-daily.py
         env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}    
           RESULT_FOLDER: ./result  # Adjust if necessary
           OUTPUT_FOLDER: ./output
+          
+        run: |
+          python get-top100-app-daily.py
       - name: upload files          
         uses: actions/upload-artifact@v4
         with:
