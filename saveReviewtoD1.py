@@ -46,7 +46,7 @@ def create_table_if_not_exists():
         response.raise_for_status()
         print("Table created successfully.")
     except requests.RequestException as e:
-        print(f"Failed to create table: {e}")
+        print(f"Failed to create table ios_review_data: {e}")
 
 def insert_into_ios_review_data(data, batch_size=1000):
     """
