@@ -112,6 +112,7 @@ def get_category_urls(domain):
                 if url and 'https://apps.apple.com/us/charts' in url:
                     csv_file.add_data(url)
                     curls.append(url)
+        save_category_urls_to_d1(curls)
 
         csv_file.record()
         return curls
