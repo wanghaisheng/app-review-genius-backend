@@ -3,6 +3,9 @@ import os
 import concurrent.futures
 from DataRecorder import Recorder
 from getbrowser import setup_chrome
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Constants for D1 Database
 D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
