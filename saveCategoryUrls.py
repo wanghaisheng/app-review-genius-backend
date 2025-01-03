@@ -10,7 +10,8 @@ D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
 CLOUDFLARE_API_TOKEN = os.getenv('CLOUDFLARE_API_TOKEN')
 CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/d1/database/{D1_DATABASE_ID}"
-
+url = f"{CLOUDFLARE_BASE_URL}/query"
+print('=======',url,CLOUDFLARE_ACCOUNT_ID,D1_DATABASE_ID,CLOUDFLARE_API_TOKEN)
 def create_category_urls_table():
     """
     Create the ios_top100_category_urls table if it does not exist in the D1 database.
