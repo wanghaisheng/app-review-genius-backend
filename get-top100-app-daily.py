@@ -11,6 +11,10 @@ from getbrowser import setup_chrome
 from app_store_scraper import AppStore
 import requests
 import random
+from saveReviewtoD1 import *
+
+from saveTop100rank import *
+
 # Environment Variables
 D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
@@ -177,7 +181,7 @@ async def get_review(item, outfile):
 
         
         outfile.add_data(item)
-
+        insert_into_review_table([item])
 
 async def main():
     """
