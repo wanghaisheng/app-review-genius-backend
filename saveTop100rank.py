@@ -9,10 +9,10 @@ CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{os.getenv
 
 def create_table_if_not_exists():
     """
-    Create the ios_top100_app_data table if it does not exist.
+    Create the ios_top100_rank_data table if it does not exist.
     """
     create_table_sql = """
-    CREATE TABLE IF NOT EXISTS ios_top100_app_data (
+    CREATE TABLE IF NOT EXISTS ios_top100_rank_data (
         id SERIAL PRIMARY KEY,  -- Auto-incrementing primary key
         platform TEXT,
         type TEXT,
@@ -43,7 +43,7 @@ def create_table_if_not_exists():
         response.raise_for_status()
         print("Table checked/created successfully.")
     except requests.RequestException as e:
-        print(f"Failed to check/create table: {e}")
+        print(f"Failed to check/create table ios_top100_rank_data: {e}")
 
 
 def insert_into_top100rank(data):
@@ -60,7 +60,7 @@ def insert_into_top100rank(data):
     }
 
     # Construct the insert SQL query
-    sql_query = "INSERT INTO ios_top100_app_data (platform, type, cid, cname, rank, appid, appname, icon, link, title, updateAt, country, row_hash) VALUES "
+    sql_query = "INSERT INTO ios_top100_rank_data (platform, type, cid, cname, rank, appid, appname, icon, link, title, updateAt, country, row_hash) VALUES "
     values = ", ".join([
         f"('{row['platform']}', '{row['type']}', '{row['cid']}', '{row['cname']}', {row['rank']}, '{row['appid']}', '{row['appname']}', '{row['icon']}', '{row['link']}', '{row['title']}', '{row['updateAt']}', '{row['country']}', '{row['row_hash']}')"
         for row in data
