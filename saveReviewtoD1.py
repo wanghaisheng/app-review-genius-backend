@@ -1,12 +1,12 @@
 import hashlib
 import requests
+import os
+
 D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
 CLOUDFLARE_API_TOKEN = os.getenv('CLOUDFLARE_API_TOKEN')
 
-
 CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/d1/database/{D1_DATABASE_ID}"
-
 
 def compute_hashes(data):
     """
@@ -19,6 +19,35 @@ def compute_hashes(data):
         hashes[hash_id] = row
     return hashes
 
+def create_table_if_not_exists():
+    """
+    Create the review table if it does not exist.
+    """
+    url = f"{CLOUDFLARE_BASE_URL}/query"
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    create_query = """
+        CREATE TABLE IF NOT EXISTS review_table (
+            id TEXT PRIMARY KEY,
+            appid TEXT,
+            appname TEXT,
+            country TEXT,
+            keyword TEXT,
+            score REAL,
+            userName TEXT,
+            date TEXT,
+            review TEXT
+        );
+    """
+    try:
+        response = requests.post(url, headers=headers, json={"sql": create_query})
+        response.raise_for_status()
+        print("Table created successfully.")
+    except requests.RequestException as e:
+        print(f"Failed to create table: {e}")
+
 def insert_into_review_table(data, batch_size=1000):
     """
     Insert rows into the review table with optimized hash checks and batch inserts.
@@ -28,6 +57,8 @@ def insert_into_review_table(data, batch_size=1000):
         "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
         "Content-Type": "application/json"
     }
+    create_table_if_not_exists()
+
 
     # Compute hashes for all rows
     hash_data = compute_hashes(data)
@@ -67,3 +98,13 @@ def insert_into_review_table(data, batch_size=1000):
 def compute_hash(appid, username, date):
     hash_input = f"{appid}-{username}-{date}"
     return hashlib.sha256(hash_input.encode('utf-8')).hexdigest()
+
+# Create table if it does not exist
+# create_table_if_not_exists()
+
+# Example usage
+data = [
+    {'appid': 'app1', 'appname': 'App 1', 'country': 'US', 'keyword': 'keyword1', 'score': 4.5, 'userName': 'user1', 'date': '2022-01-01', 'review': 'Great app!'},
+    {'appid': 'app2', 'appname': 'App 2', 'country': 'UK', 'keyword': 'keyword2', 'score': 4.0, 'userName': 'user2', 'date': '2022-01-02', 'review': 'Good app!'}
+]
+# insert_into_review_table(data)
