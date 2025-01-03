@@ -36,7 +36,7 @@ def create_category_urls_table():
         response.raise_for_status()
         print("Table 'ios_top100_category_urls' created successfully (if it didn't exist).")
     except requests.RequestException as e:
-        print(f"Failed to create table: {e}")
+        print(f"Failed to create table ios_top100_category_urls: {e}")
 
 def save_category_urls_to_d1(category_urls):
     """
