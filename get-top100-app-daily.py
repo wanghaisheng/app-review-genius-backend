@@ -12,7 +12,7 @@ from app_store_scraper import AppStore
 import requests
 import random
 from saveReviewtoD1 import *
-
+from saveCategoryUrls import *
 from saveTop100rank import *
 
 # Environment Variables
