@@ -146,7 +146,7 @@ def getids_from_category(url, outfile):
                 appname = app_link.split('/')[-2]
                 rank = link.ele('.we-lockup__rank').text
                 title = link.ele('.we-lockup__text ').text
-                outfile.add_data({
+                item={
                     "platform": platform,
                     "country": country,
                     "type": type,
@@ -159,9 +159,10 @@ def getids_from_category(url, outfile):
                     "link": app_link,
                     "title": title,
                     "updateAt": datetime.now()
-                })
+                }
+                out_file.add_data(item)
                 print('add app', app_link)
-
+                insert_into_top100rank([item])
     except Exception as e:
         print(f"Error processing category URL {url}: {e}")
 
