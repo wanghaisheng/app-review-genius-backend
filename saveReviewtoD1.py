@@ -29,7 +29,7 @@ def create_table_if_not_exists():
         "Content-Type": "application/json"
     }
     create_query = """
-        CREATE TABLE IF NOT EXISTS review_table (
+        CREATE TABLE IF NOT EXISTS ios_review_data (
             id TEXT PRIMARY KEY,
             appid TEXT,
             appname TEXT,
@@ -48,7 +48,7 @@ def create_table_if_not_exists():
     except requests.RequestException as e:
         print(f"Failed to create table: {e}")
 
-def insert_into_review_table(data, batch_size=1000):
+def insert_into_ios_review_data(data, batch_size=1000):
     """
     Insert rows into the review table with optimized hash checks and batch inserts.
     """
@@ -65,7 +65,7 @@ def insert_into_review_table(data, batch_size=1000):
 
     # Fetch existing hashes from the database
     all_hashes = "','".join(hash_data.keys())
-    fetch_query = f"SELECT id FROM review_table WHERE id IN ('{all_hashes}');"
+    fetch_query = f"SELECT id FROM ios_review_data WHERE id IN ('{all_hashes}');"
     response = requests.post(url, headers=headers, json={"sql": fetch_query})
     response.raise_for_status()
     existing_hashes = {row['id'] for row in response.json()['result']}
@@ -83,7 +83,7 @@ def insert_into_review_table(data, batch_size=1000):
             for row in batch
         )
         insert_query = (
-            "INSERT INTO review_table (id, appid, appname, country, keyword, score, userName, date, review) "
+            "INSERT INTO ios_review_data (id, appid, appname, country, keyword, score, userName, date, review) "
             f"VALUES {values};"
         )
 
@@ -107,4 +107,4 @@ data = [
     {'appid': 'app1', 'appname': 'App 1', 'country': 'US', 'keyword': 'keyword1', 'score': 4.5, 'userName': 'user1', 'date': '2022-01-01', 'review': 'Great app!'},
     {'appid': 'app2', 'appname': 'App 2', 'country': 'UK', 'keyword': 'keyword2', 'score': 4.0, 'userName': 'user2', 'date': '2022-01-02', 'review': 'Good app!'}
 ]
-# insert_into_review_table(data)
+# insert_into_ios_review_data(data)
