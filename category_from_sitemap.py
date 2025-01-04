@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 import logging
 import time
 import os
+from saveCategoryUrls import save_category_urls_to_d1
 
 # Set up logging configuration
 logging.basicConfig(level=logging.DEBUG)
