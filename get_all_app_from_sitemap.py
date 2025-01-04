@@ -152,10 +152,12 @@ def process_sitemaps_and_save_profiles():
     # Step 1: Fetch and parse the main sitemap
     logging.info(f"Processing sitemap from URL: {sitemap_url}")
     loc_urls = fetch_and_parse_sitemap(sitemap_url)
-    
-    for loc_url in loc_urls:
+    print('gz counts',len(loc_urls))
+    for loc_url in loc_urls[:1]:
         # Step 2: Fetch and parse the GZipped sitemap at each <loc> URL
         app_data_list = fetch_and_parse_gzip(loc_url)
+        print('app_data_list counts',len(app_data_list))
+        
         # Step 3: Save app profiles in batches
         if app_data_list:
             logging.info(f"Processing {len(app_data_list)} app profiles from {loc_url}")
