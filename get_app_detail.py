@@ -5,7 +5,7 @@ import concurrent.futures
 from DataRecorder import Recorder
 from getbrowser import setup_chrome
 from dotenv import load_dotenv
-from  save_app_profile import batch_process_updated_app_profiles
+from  save_app_profile import *
 load_dotenv()
 
 # Constants for D1 Database
@@ -181,10 +181,7 @@ def bulk_scrape_and_save_app_urls(urls):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         results = list(executor.map(getinfo, urls))
     
-    for app_data in results:
-        if app_data:
-            batch_process_updated_app_profiles(app_data)
-
+    batch_process_in_chunks(results, process_function=batch_process_updated_app_profiles)
 if __name__ == "__main__":
     # Create the table before scraping
     create_app_profiles_table()
