@@ -120,7 +120,7 @@ def process_sitemaps_and_save_profiles():
         print('app_data_list count',len(app_data_list))
         
         # Step 3: Save app profiles
-        batch_process_in_chunks(app_data_list, process_function=batch_process_initial_app_profiles)
+        batch_process_in_chunks(app_data_list[:500], process_function=batch_process_initial_app_profiles)
 
 # Start the process
 process_sitemaps_and_save_profiles()
