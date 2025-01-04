@@ -32,9 +32,9 @@ jobs:
           OUTPUT_FOLDER: ./output
           
         run: |
-          python get-top100-app-daily.py
-      - name: upload files          
-        uses: actions/upload-artifact@v4
-        with:
-            name: healthapps
-            path: ./result/ # or path/to/artifact
+          python category_from_sitemap.py
+      # - name: upload files          
+        # uses: actions/upload-artifact@v4
+        # with:
+            # name: healthapps
+            # path: ./result/ # or path/to/artifact
