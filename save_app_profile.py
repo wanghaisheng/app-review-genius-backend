@@ -187,6 +187,7 @@ def batch_process_initial_app_profiles(app_profiles):
     """
     Batch process and insert initial app profiles with IGNORE to prevent duplicates.
     """
+    create_app_profiles_table()
     for app_data in app_profiles:
         try:
             if not app_data:
