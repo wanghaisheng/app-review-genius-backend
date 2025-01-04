@@ -45,6 +45,7 @@ def process_sitemaps(sitemap_url):
         category_links.extend(extract_links_from_xml(gz_root))
 
     # Step 3: Save category URLs to D1
+    print('prepare to insert curls',len(category_links))
     save_category_urls_to_d1(category_links)
 
 # Example usage
