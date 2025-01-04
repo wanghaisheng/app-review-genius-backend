@@ -3,6 +3,7 @@ import requests
 import xml.etree.ElementTree as ET
 import logging
 import time
+import os
 
 # Set up logging configuration
 logging.basicConfig(level=logging.DEBUG)
@@ -30,43 +31,67 @@ def fetch_with_retry(url, max_retries=MAX_RETRIES, timeout=10):
                 raise
     return None
 
-def fetch_and_decompress_gz(url):
-    """Fetch and decompress a .gz file with retry and timeout."""
+def save_gz_to_local(response, local_path):
+    """Save the .gz file locally."""
+    try:
+        with open(local_path, 'wb') as file:
+            file.write(response.content)
+        logger.info(f".gz file saved to {local_path}")
+        return local_path
+    except OSError as e:
+        logger.error(f"Failed to save .gz file to {local_path}: {e}")
+        raise
+
+def decompress_gz_file(local_gz_path=None, gz_stream=None):
+    """Decompress a .gz file from either local path or HTTP stream."""
+    try:
+        if local_gz_path:
+            # Read from local .gz file
+            with gzip.open(local_gz_path, 'rb') as gz_file:
+                decompressed_content = gz_file.read()
+                logger.debug(f"Decompressed content from local file {local_gz_path} (first 500 bytes):\n{decompressed_content[:500]}")
+        elif gz_stream:
+            # Read from HTTP stream
+            with gzip.GzipFile(fileobj=gz_stream) as gz_file:
+                decompressed_content = gz_file.read()
+                logger.debug(f"Decompressed content from HTTP stream (first 500 bytes):\n{decompressed_content[:500]}")
+        else:
+            logger.error("No input provided for decompression.")
+            return None
+
+        # Check if the decompressed content seems like XML
+        if decompressed_content[:5] != b"<?xml":
+            logger.error("Decompressed content does not start with '<?xml'. It may not be valid XML.")
+            return None
+
+        # Try to parse the decompressed XML
+        try:
+            xml_root = ET.fromstring(decompressed_content)
+            logger.debug("Successfully decompressed and parsed XML.")
+            return xml_root
+        except ET.ParseError as e:
+            logger.error(f"Failed to parse decompressed XML: {e}")
+            return None
+    except (OSError, gzip.BadGzipFile) as e:
+        logger.error(f"Failed to decompress .gz file: {e}")
+        raise
+
+def fetch_and_decompress_gz(url, save_to_local=False, local_path=None):
+    """Fetch a .gz file, optionally save it locally, and decompress it."""
     try:
         # Fetch the .gz file with retry mechanism
         logger.debug(f"Starting download and decompression of .gz file from {url}")
         response = fetch_with_retry(url, timeout=30)  # Longer timeout for large .gz files
         if response:
-            # Open the .gz file from the response's raw stream
-            with gzip.GzipFile(fileobj=response.raw) as gz_file:
-                logger.debug(f"Decompressing .gz file from {url}")
-                # Read the decompressed content as bytes
-                decompressed_content = gz_file.read()
-
-                # Log the first 500 characters of the decompressed content for inspection
-                logger.debug(f"Decompressed content (first 500 bytes):\n{decompressed_content[:500]}")
-
-                # Check if the decompressed content seems like XML
-                if decompressed_content[:5] != b"<?xml":
-                    logger.error(f"Decompressed content from {url} does not start with '<?xml'. It may not be valid XML.")
-                    # Check if it might be HTML or JSON
-                    if b"<html>" in decompressed_content or b"application/json" in decompressed_content:
-                        logger.error(f"Decompressed content seems to be HTML or JSON, not XML.")
-                    return None
-
-                # Try to parse the decompressed XML
-                try:
-                    xml_root = ET.fromstring(decompressed_content)
-                    logger.debug(f"Successfully decompressed and parsed .gz file from {url}")
-                    return xml_root
-                except ET.ParseError as e:
-                    logger.error(f"Failed to parse decompressed XML from {url}: {e}")
-                    return None
+            # Optionally save the .gz file locally
+            if save_to_local:
+                local_gz_path = local_path or "downloaded_file.xml.gz"
+                save_gz_to_local(response, local_gz_path)
+                return decompress_gz_file(local_gz_path=local_gz_path)
+            else:
+                return decompress_gz_file(gz_stream=response.raw)
     except requests.RequestException as e:
         logger.error(f"Failed to fetch .gz file from {url}: {e}")
-        raise
-    except OSError as e:
-        logger.error(f"Failed to decompress .gz file from {url}: {e}")
         raise
 
 def extract_links_from_xml(xml_root, tag="loc"):
@@ -74,7 +99,7 @@ def extract_links_from_xml(xml_root, tag="loc"):
     namespaces = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}  # Define the correct namespace
     return [element.text for element in xml_root.findall(f".//ns:{tag}", namespaces)]
 
-def process_sitemaps(sitemap_url):
+def process_sitemaps(sitemap_url, save_gz_files=False, local_path=None):
     """Process the sitemap index and save category URLs."""
     try:
         # Step 1: Parse the main sitemap XML
@@ -90,7 +115,7 @@ def process_sitemaps(sitemap_url):
     category_links = []
     for gz_link in gz_links:
         try:
-            gz_root = fetch_and_decompress_gz(gz_link)
+            gz_root = fetch_and_decompress_gz(gz_link, save_to_local=save_gz_files, local_path=local_path)
             if gz_root:
                 category_links.extend(extract_links_from_xml(gz_root))
         except Exception as e:
@@ -121,4 +146,4 @@ def fetch_and_parse_xml(url):
 
 # Example usage
 sitemap_url = "https://apps.apple.com/sitemaps_apps_index_charts_1.xml"
-process_sitemaps(sitemap_url)
+process_sitemaps(sitemap_url, save_gz_files=True, local_path="downloaded_file.xml.gz")
