@@ -1,10 +1,9 @@
 import gzip
 import requests
-import os
 import xml.etree.ElementTree as ET
 import logging
 import time
-from saveCategoryUrls  import save_category_urls_to_d1
+
 # Set up logging configuration
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -44,12 +43,18 @@ def fetch_and_decompress_gz(url):
                 # Read the decompressed content as bytes
                 decompressed_content = gz_file.read()
 
+                # Log the first 500 characters of the decompressed content for inspection
+                logger.debug(f"Decompressed content (first 500 bytes):\n{decompressed_content[:500]}")
+
                 # Check if the decompressed content seems like XML
                 if decompressed_content[:5] != b"<?xml":
                     logger.error(f"Decompressed content from {url} does not start with '<?xml'. It may not be valid XML.")
+                    # Check if it might be HTML or JSON
+                    if b"<html>" in decompressed_content or b"application/json" in decompressed_content:
+                        logger.error(f"Decompressed content seems to be HTML or JSON, not XML.")
                     return None
 
-                # Parse XML
+                # Try to parse the decompressed XML
                 try:
                     xml_root = ET.fromstring(decompressed_content)
                     logger.debug(f"Successfully decompressed and parsed .gz file from {url}")
@@ -63,6 +68,11 @@ def fetch_and_decompress_gz(url):
     except OSError as e:
         logger.error(f"Failed to decompress .gz file from {url}: {e}")
         raise
+
+def extract_links_from_xml(xml_root, tag="loc"):
+    """Extract links from XML by a specified tag."""
+    namespaces = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}  # Define the correct namespace
+    return [element.text for element in xml_root.findall(f".//ns:{tag}", namespaces)]
 
 def process_sitemaps(sitemap_url):
     """Process the sitemap index and save category URLs."""
@@ -108,11 +118,6 @@ def fetch_and_parse_xml(url):
     except ET.ParseError as e:
         logger.error(f"Failed to parse XML from {url}: {e}")
         raise
-
-def extract_links_from_xml(xml_root, tag="loc"):
-    """Extract links from XML by a specified tag."""
-    namespaces = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}  # Define the correct namespace
-    return [element.text for element in xml_root.findall(f".//ns:{tag}", namespaces)]
 
 # Example usage
 sitemap_url = "https://apps.apple.com/sitemaps_apps_index_charts_1.xml"
