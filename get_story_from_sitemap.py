@@ -1,4 +1,3 @@
-<!-- https://github.com/XRealityZone/letsvisionos24/blob/f46c75c9240414edbcc5a7a682476142131c8d83/apps.apple.com/robots.ssl.txt#L5 -->
 import gzip
 import hashlib
 import requests
@@ -26,10 +25,23 @@ def fetch_and_parse_xml(url):
     response.raise_for_status()
     return ET.fromstring(response.content)
 
-def fetch_and_decompress_gz(url):
-    """Fetch and decompress a .gz file."""
+def fetch_and_decompress_gz(url, save_to_disk=False, download_path=None):
+    """Fetch and decompress a .gz file with an option to save it to disk or process directly from HTTP stream."""
     response = requests.get(url, stream=True)
     response.raise_for_status()
+
+    # If save_to_disk is True, save the .gz file locally
+    if save_to_disk:
+        if download_path is None:
+            download_path = os.path.join(os.getcwd(), os.path.basename(url))
+        with open(download_path, 'wb') as f:
+            f.write(response.content)
+        logging.info(f"Saved .gz file to {download_path}")
+        with open(download_path, 'rb') as f:
+            with gzip.GzipFile(fileobj=f) as gz_file:
+                return ET.fromstring(gz_file.read())
+
+    # Otherwise, process the .gz file directly from the HTTP stream
     with gzip.GzipFile(fileobj=response.raw) as gz_file:
         return ET.fromstring(gz_file.read())
 
@@ -110,8 +122,8 @@ def save_story_urls_to_d1(links):
     except requests.RequestException as e:
         logging.error(f"Failed to insert records: {e}")
 
-def process_story_sitemaps(sitemap_url):
-    """Process the story sitemap index and save URLs."""
+def process_story_sitemaps(sitemap_url, save_gz_to_disk=False, download_path=None):
+    """Process the story sitemap index and save URLs with an option to save .gz files to disk."""
     # Step 1: Parse the main sitemap XML
     try:
         sitemap_root = fetch_and_parse_xml(sitemap_url)
@@ -125,7 +137,7 @@ def process_story_sitemaps(sitemap_url):
     story_links = []
     for gz_link, _ in gz_links:
         try:
-            gz_root = fetch_and_decompress_gz(gz_link)
+            gz_root = fetch_and_decompress_gz(gz_link, save_to_disk=save_gz_to_disk, download_path=download_path)
             story_links.extend(extract_links_and_lastmod(gz_root))
         except Exception as e:
             logging.error(f"Error processing .gz file {gz_link}: {e}")
@@ -137,4 +149,4 @@ def process_story_sitemaps(sitemap_url):
 
 # Example usage
 sitemap_url = "https://apps.apple.com/sitemaps_apps_index_story_1.xml"
-process_story_sitemaps(sitemap_url)
+process_story_sitemaps(sitemap_url, save_gz_to_disk=True, download_path="path/to/save/gz_file.gz")
