@@ -36,8 +36,9 @@ def process_sitemaps(sitemap_url):
     """Process the sitemap index and save category URLs."""
     # Step 1: Parse the main sitemap XML
     sitemap_root = fetch_and_parse_xml(sitemap_url)
+    
     gz_links = extract_links_from_xml(sitemap_root)
-
+    print('gz links ',len(gz_links))
     # Step 2: Process each .gz file
     category_links = []
     for gz_link in gz_links:
