@@ -44,7 +44,7 @@ def create_table_if_not_exists():
     try:
         response = requests.post(url, headers=headers, json=query_payload)
         response.raise_for_status()
-        print("Table checked/created successfully.")
+        print("Table ios_top100_rank_data  checked/created successfully.")
     except requests.RequestException as e:
         print(f"Failed to check/create table ios_top100_rank_data: {e}")
 
@@ -77,9 +77,9 @@ def insert_into_top100rank(data):
         # Send the query to Cloudflare D1
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        print("Data inserted successfully.")
+        print("Data inserted ios_top100_rank_data successfully.")
     except requests.RequestException as e:
-        print(f"Failed to insert data: {e}")
+        print(f"Failed to insert ios_top100_rank_data data: {e}")
 
 
 def compute_row_hash(row):
