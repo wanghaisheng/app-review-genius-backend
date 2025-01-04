@@ -44,46 +44,6 @@ def extract_links_from_xml(xml_root, tag="loc"):
     namespaces = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}  # Define the correct namespace
     return [element.text for element in xml_root.findall(f".//ns:{tag}", namespaces)]
 
-def save_initial_app_profile(app_data):
-    """
-    Save basic app profile data from Sitemap to the D1 database.
-    This is the first insertion with basic information.
-    """
-    if not app_data:
-        return
-
-    url = f"{CLOUDFLARE_BASE_URL}/query"
-    headers = {
-        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-
-    # Generate row hash using lastmodify
-    row_hash = calculate_row_hash(app_data["url"], app_data["lastmodify"])
-
-    # SQL Query to insert basic app profile
-    sql_query = """
-    INSERT INTO ios_app_profiles (appid, appname, country, updated_at, lastmodify, row_hash)
-    VALUES (?, ?, ?, ?, ?, ?)
-    """
-
-    values = (
-        app_data["appid"],
-        app_data["appname"],
-        app_data["country"],
-        app_data["updated_at"],
-        app_data["lastmodify"],
-        row_hash
-    )
-
-    payload = {"sql": sql_query, "bindings": values}
-
-    try:
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-        logging.info(f"Saved basic app profile for {app_data['appname']} ({app_data['appid']}).")
-    except requests.RequestException as e:
-        logging.error(f"Failed to save basic app profile: {e}")
 
 def fetch_and_parse_sitemap(url):
     """
