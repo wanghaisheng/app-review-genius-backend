@@ -96,4 +96,4 @@ category_urls = [
     # Add more URLs as needed...
 ]
 
-save_category_urls_to_d1(category_urls)
+# save_category_urls_to_d1(category_urls)
