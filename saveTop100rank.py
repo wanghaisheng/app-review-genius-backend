@@ -92,7 +92,7 @@ def compute_row_hash(row):
     return hashlib.sha256(hash_input.encode('utf-8')).hexdigest()
 
 
-def process_and_insert(data):
+def process_ios_top100_rank_data_and_insert(data):
     """
     Process the data, compute the row_hash, and insert it into the database.
     """
