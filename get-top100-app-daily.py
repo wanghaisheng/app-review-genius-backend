@@ -34,43 +34,6 @@ OUTPUT_FOLDER = "./output"
 browser = setup_chrome()
 
 
-def insert_into_top100_rank(data):
-    """
-    Insert rows into the D1 database.
-    """
-    url = f"{CLOUDFLARE_BASE_URL}/query"
-    headers = {
-        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-
-    sql_query = "INSERT INTO ios_top100_app_data (platform, type, cid, cname, rank, appid, appname, icon, link, title, updateAt, country) VALUES "
-    values = ", ".join([f"('{row['platform']}', '{row['type']}', '{row['cid']}', '{row['cname']}', {row['rank']}, '{row['appid']}','{row['appname']}', '{row['icon']}', '{row['link']}', '{row['title']}', '{row['updateAt']}','{row['country']}')" for row in data])
-    sql_query += values + ";"
-
-    payload = {"sql": sql_query}
-
-    try:
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-        print("Data inserted successfully.")
-    except requests.RequestException as e:
-        print(f"Failed to insert data: {e}")
-
-
-def save_csv_to_d1(file_path):
-    """
-    Read a CSV file and insert its contents into the Cloudflare D1 database.
-    """
-    data = []
-    try:
-        with open(file_path, 'r') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                data.append(row)
-        insert_into_top100_rank(data)
-    except Exception as e:
-        print(f"Error reading CSV file '{file_path}': {e}")
 
 
 def process_line(csv_file, lines):
@@ -207,8 +170,6 @@ async def main():
         outfile.record()
         print('get id ok', outfile_path)
 
-        if saved1:
-            save_csv_to_d1(outfile_path)
         
         # Get reviews concurrently
         if downloadreview:
