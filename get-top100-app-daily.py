@@ -95,7 +95,7 @@ def getids_from_category(url, outfile):
         cname = url.split('/')[-2]
         platform = url.split('/')[-3]
         country = url.split('/')[-5]
-
+        items=[]
         for chart_type in ['chart=top-free', 'chart=top-paid']:
             type = chart_type.split('-')[-1]
             full_url = f"{url}?{chart_type}"
@@ -126,7 +126,8 @@ def getids_from_category(url, outfile):
                 }
                 outfile.add_data(item)
                 print('add app', app_link)
-                insert_into_top100rank([item])
+                items.append(item)
+            process_ios_top100_rank_data_and_insert(items)
     except Exception as e:
         print(f"Error processing category URL {url}: {e}")
 
