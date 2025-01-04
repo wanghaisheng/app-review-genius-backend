@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 import hashlib
 import os
 
+from save_app_profile  import *
+
 load_dotenv()
 
 # Constants for D1 Database
@@ -139,10 +141,8 @@ def process_sitemaps_and_save_profiles():
     for loc_url in loc_urls:
         # Step 2: Fetch and parse the GZipped sitemap at each <loc> URL
         app_data_list = fetch_and_parse_gzip(loc_url)
-        
         # Step 3: Save app profiles
-        for app_data in app_data_list:
-            save_initial_app_profile(app_data)
+        batch_process_in_chunks(app_data_list, process_function=batch_process_initial_app_profiles)
 
 # Start the process
 process_sitemaps_and_save_profiles()
