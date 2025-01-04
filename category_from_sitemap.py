@@ -62,7 +62,9 @@ def fetch_and_decompress_gz(url):
 
 def extract_links_from_xml(xml_root, tag="loc"):
     """Extract links from XML by a specified tag."""
-    links = [element.text for element in xml_root.findall(f".//{tag}")]
+    namespaces = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}  # Define the correct namespace
+    
+    links= [element.text for element in xml_root.findall(f".//ns:{tag}", namespaces)]
     logging.debug(f"Extracted {len(links)} links with tag '{tag}'")
     return links
 
