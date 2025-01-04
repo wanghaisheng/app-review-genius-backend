@@ -65,6 +65,12 @@ def save_category_urls_to_d1(category_urls):
         for category_url in batch:
             if '/charts/' not in category_url:
                 continue
+            if category_url is None:
+                continue
+            c=category_url.replace('https://apps.apple.com/','').split('/')
+            if len(c)!=5:
+                continue
+            
             parsed_url = urlparse(category_url)
             print('curl',category_url)
             path_parts = parsed_url.path.split("/")
