@@ -23,6 +23,10 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+def escape_sql(value):
+    if isinstance(value, str):
+        return value.replace("'", "''")
+    return value
 
 # Create the 'ios_app_profiles' table if it doesn't exist yet
 def create_app_profiles_table():
@@ -41,6 +45,7 @@ def create_app_profiles_table():
         appid TEXT NOT NULL,
         appname TEXT NOT NULL,
         country TEXT NOT NULL,
+        url  TEXT NOT NULL,
         releasedate TEXT,
         version TEXT,
         seller TEXT,
@@ -114,14 +119,15 @@ def save_initial_app_profile(app_data):
 
     # SQL Query to insert basic app profile with IGNORE to prevent duplicates
     sql_query = """
-    INSERT OR IGNORE INTO ios_app_profiles (appid, appname, country, releasedate, version, seller, size, category, lang, age, copyright, pricetype, priceplan, updated_at, lastmodify, row_hash)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT OR IGNORE INTO ios_app_profiles (appid, appname, country, url,releasedate, version, seller, size, category, lang, age, copyright, pricetype, priceplan, updated_at, lastmodify, row_hash)
+    VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     values = (
-        app_data["appid"],
-        app_data["appname"],
-        app_data["country"],
+        escape_sql(app_data["appid"]),
+        escape_sql(app_data["appname"]),
+        escape_sql(app_data["country"]),
+         escape_sql(app_data["url"]),                  
         app_data["releasedate"],
         app_data["version"],
         app_data["seller"],
