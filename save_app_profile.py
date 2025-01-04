@@ -95,7 +95,9 @@ def save_initial_app_profile(app_data):
     app_data["appid"]=url.split('/')[-1]
     app_data["appname"]= url.split('/')[-2]
     app_data["country"]=url.split('/')[-4]
-    app_data["updated_at"]=datetime.now()
+    current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    
+    app_data["updated_at"]=current_time
     
 
     # SQL Query to insert basic app profile with IGNORE to prevent duplicates
@@ -135,6 +137,7 @@ def update_app_profile_with_details(app_data):
         "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
         "Content-Type": "application/json"
     }
+    current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
     # SQL Query to update app profile
     sql_query = """
@@ -165,7 +168,7 @@ def update_app_profile_with_details(app_data):
         app_data.get("copyright"),
         app_data.get("pricetype"),
         ','.join(app_data.get("priceplan", [])),
-        app_data.get("updated_at"),
+        app_data.get("updated_at",current_time),
         app_data["appid"]
     )
 
