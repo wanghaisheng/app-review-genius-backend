@@ -89,6 +89,13 @@ def save_initial_app_profile(app_data):
 
     # Generate row hash using lastmodify
     row_hash = calculate_row_hash(app_data["url"], app_data["lastmodify"])
+    url=app_data["url"].replace('https://','')
+    # https://apps.apple.com/us/app/streaks/id963034692    
+    app_data["appid"]=url.split('/')[-1]
+    app_data["appname"]= url.split('/')[-2]
+    app_data["country"]=url.split('/')[-4]
+    app_data["updated_at"]=datetime.now()
+    
 
     # SQL Query to insert basic app profile with IGNORE to prevent duplicates
     sql_query = """
