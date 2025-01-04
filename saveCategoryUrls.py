@@ -30,7 +30,9 @@ def create_category_urls_table():
         country TEXT NOT NULL,
         cid TEXT NOT NULL,
         cname TEXT NOT NULL,
-        url TEXT NOT NULL
+        url TEXT NOT NULL,
+        UNIQUE(url) -- Ensures no duplicate URLs are inserted
+
     );
     """
 
@@ -66,7 +68,7 @@ def save_category_urls_to_d1(category_urls):
 
         values.append(f"('{platform}', '{country}', '{cid}', '{cname}', '{category_url}')")
 
-    sql_query = "INSERT INTO ios_top100_category_urls (platform, country, cid, cname, url) VALUES "
+    sql_query = "INSERT OR IGNORE INTO ios_top100_category_urls (platform, country, cid, cname, url) VALUES "
     sql_query += ", ".join(values) + ";"
 
     payload = {"sql": sql_query}
