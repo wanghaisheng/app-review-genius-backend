@@ -7,8 +7,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import hashlib
 import os
-
-from save_app_profile  import *
+from save_app_profile import *  # Assuming this imports batch processing functions
 
 load_dotenv()
 
@@ -32,7 +31,7 @@ logging.basicConfig(
 def calculate_row_hash(url, lastmodify):
     """
     Generate a row hash using the URL and lastmodify timestamp.
-    Using lastmodify ensures that the hash only changes if the content changes.
+    This ensures that the hash changes only when the content changes.
     """
     hash_input = f"{url}{lastmodify}"
     return hashlib.sha256(hash_input.encode()).hexdigest()
@@ -138,10 +137,10 @@ def process_sitemaps_and_save_profiles():
     # Step 1: Fetch and parse the main sitemap
     loc_urls = fetch_and_parse_sitemap(sitemap_url)
     
-    for loc_url in loc_urls:
+    for loc_url in loc_urls[:1]:
         # Step 2: Fetch and parse the GZipped sitemap at each <loc> URL
         app_data_list = fetch_and_parse_gzip(loc_url)
-        # Step 3: Save app profiles
+        # Step 3: Save app profiles in batches
         batch_process_in_chunks(app_data_list, process_function=batch_process_initial_app_profiles)
 
 # Start the process
