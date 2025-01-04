@@ -90,9 +90,9 @@ def save_initial_app_profile(app_data):
     # Generate row hash using lastmodify
     row_hash = calculate_row_hash(app_data["url"], app_data["lastmodify"])
 
-    # SQL Query to insert basic app profile
+    # SQL Query to insert basic app profile with IGNORE to prevent duplicates
     sql_query = """
-    INSERT INTO ios_app_profiles (appid, appname, country, updated_at, lastmodify, row_hash)
+    INSERT OR IGNORE INTO ios_app_profiles (appid, appname, country, updated_at, lastmodify, row_hash)
     VALUES (?, ?, ?, ?, ?, ?)
     """
 
@@ -170,43 +170,32 @@ def update_app_profile_with_details(app_data):
     except requests.RequestException as e:
         logging.error(f"Failed to update app profile: {e}")
 
-def batch_process_app_profiles(app_profiles):
+def batch_process_initial_app_profiles(app_profiles):
     """
-    Batch process and insert or update app profiles.
+    Batch process and insert initial app profiles with IGNORE to prevent duplicates.
     """
     for app_data in app_profiles:
         try:
             if not app_data:
                 continue
-            row_hash = calculate_row_hash(app_data["url"], app_data["lastmodify"])
-
-            # Check if the profile already exists using row_hash to avoid duplicates
-            url = f"{CLOUDFLARE_BASE_URL}/query"
-            headers = {
-                "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
-                "Content-Type": "application/json"
-            }
-
-            # SQL Query to check if row_hash exists
-            sql_check_query = "SELECT COUNT(*) FROM ios_app_profiles WHERE row_hash = ?"
-            check_payload = {"sql": sql_check_query, "bindings": [row_hash]}
-
-            response = requests.post(url, headers=headers, json=check_payload)
-            response.raise_for_status()
-
-            result = response.json()
-            if result["result"][0]["count"] == 0:
-                # No record found, insert new profile
-                save_initial_app_profile(app_data)
-            else:
-                # Record exists, update existing profile
-                update_app_profile_with_details(app_data)
-
+            save_initial_app_profile(app_data)
         except Exception as e:
-            logging.error(f"Error processing app profile {app_data['appid']}: {e}")
+            logging.error(f"Error processing initial app profile {app_data['appid']}: {e}")
+
+def batch_process_updated_app_profiles(app_profiles):
+    """
+    Batch process and update app profiles with additional details.
+    """
+    for app_data in app_profiles:
+        try:
+            if not app_data:
+                continue
+            update_app_profile_with_details(app_data)
+        except Exception as e:
+            logging.error(f"Error processing updated app profile {app_data['appid']}: {e}")
 
 # Example usage for batch processing
-app_profiles_data = [
+initial_app_profiles_data = [
     {
         "appid": "com.example.app1",
         "appname": "Example App 1",
@@ -225,4 +214,41 @@ app_profiles_data = [
     }
 ]
 
-batch_process_app_profiles(app_profiles_data)
+updated_app_profiles_data = [
+    {
+        "appid": "com.example.app1",
+        "appname": "Example App 1",
+        "country": "US",
+        "releasedate": "2025-01-01",
+        "version": ["1.0"],
+        "seller": "Example Corp",
+        "size": "50MB",
+        "category": "Games",
+        "lang": "English",
+        "age": "12+",
+        "copyright": "2025 Example Corp",
+        "pricetype": "Free",
+        "priceplan": ["Ad-supported"],
+        "updated_at": "2025-01-04"
+    },
+    {
+        "appid": "com.example.app2",
+        "appname": "Example App 2",
+        "country": "US",
+        "releasedate": "2025-01-03",
+        "version": ["1.2"],
+        "seller": "Another Corp",
+        "size": "70MB",
+        "category": "Productivity",
+        "lang": "English",
+        "age": "All",
+        "copyright": "2025 Another Corp",
+        "pricetype": "Paid",
+        "priceplan": ["Premium"],
+        "updated_at": "2025-01-05"
+    }
+]
+
+# Batch processing
+batch_process_initial_app_profiles(initial_app_profiles_data)
+batch_process_updated_app_profiles(updated_app_profiles_data)
