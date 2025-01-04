@@ -31,6 +31,8 @@ def fetch_and_parse_xml(url):
         response = requests.get(url)
         response.raise_for_status()
         logging.debug("XML fetched successfully.")
+        logging.debug(f"Raw XML content (first 500 characters):\n{response.text[:500]}")
+        
         return ET.fromstring(response.content)
     except requests.RequestException as e:
         logging.error(f"Failed to fetch XML from {url}: {e}")
