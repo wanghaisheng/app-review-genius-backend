@@ -12,6 +12,9 @@ from app_store_scraper import AppStore
 import requests
 import pandas as pd
 from apicall import get_token,fetch_reviews
+from getappinfo import *
+from saveReviewtoD1 import *
+
 # Environment Variables
 D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
@@ -184,6 +187,7 @@ async def get_review(url, outfile, keyword):
 
         await asyncio.to_thread(app.review, sleep=random.randint(1, 2))
         all_reviews=app.reviews
+        items=[]
         if len(all_reviews)==0 or all_reviews is None:
             user_agents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
@@ -205,15 +209,20 @@ async def get_review(url, outfile, keyword):
 
         print('aall review')
         for review in all_reviews:
-            outfile.add_data({
+            item={
+                "appid":app_id,
                 "appname": appname,
                 "country": country,
                 "keyword": keyword,
                 "score": review['rating'],
-                "userName": review['userName'],
+                "userName": review['userName'].strip(),
                 "date": review['date'],
-                "review": review['review'].replace('\r', ' ').replace('\n', ' ')
-            })
+                "review": review['review'].replace('\r', ' ').replace('\n', ' ').strip()
+            }
+            items.append(item)
+
+        insert_into_ios_review_data(items)
+    
     except Exception as e:
         print(f"Error fetching reviews for URL '{url}': {e}")
 
@@ -232,7 +241,7 @@ async def main():
         if not ids:
             print(f"No apps found for keyword '{keyword}'")
             return
-
+        bulk_scrape_and_save_app_urls(ids)
         outfile_reviews_path = f'{RESULT_FOLDER}/{keyword}-app-reviews-{current_time}.csv'
         outfile_reviews = Recorder(outfile_reviews_path)
         # ids=ids[:1]
