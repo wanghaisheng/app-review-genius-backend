@@ -7,7 +7,8 @@ from datetime import datetime
 from dotenv import load_dotenv
 import hashlib
 import os
-from save_app_profile import *  # Assuming this imports batch processing functions
+
+from save_app_profile import *
 
 load_dotenv()
 
@@ -20,10 +21,10 @@ CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLAR
 
 # Set up logging configuration
 logging.basicConfig(
-    level=logging.DEBUG,  # Set to DEBUG for detailed logging
+    level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("app_profiles_debug.log"),
+        logging.FileHandler("app_profiles.log"),
         logging.StreamHandler()
     ]
 )
@@ -31,16 +32,17 @@ logging.basicConfig(
 def calculate_row_hash(url, lastmodify):
     """
     Generate a row hash using the URL and lastmodify timestamp.
-    This ensures that the hash changes only when the content changes.
+    Using lastmodify ensures that the hash only changes if the content changes.
     """
-    try:
-        hash_input = f"{url}{lastmodify}"
-        row_hash = hashlib.sha256(hash_input.encode()).hexdigest()
-        logging.debug(f"Generated hash for URL: {url} and lastmodify: {lastmodify} -> {row_hash}")
-        return row_hash
-    except Exception as e:
-        logging.error(f"Error in calculating hash for url: {url} and lastmodify: {lastmodify} - {e}")
-        return None
+    hash_input = f"{url}{lastmodify}"
+    return hashlib.sha256(hash_input.encode()).hexdigest()
+
+def extract_links_from_xml(xml_root, tag="loc"):
+    """
+    Extract links or other elements from the given XML root using the specified tag.
+    """
+    namespaces = {'ns': 'http://www.sitemaps.org/schemas/sitemap/0.9'}  # Define the correct namespace
+    return [element.text for element in xml_root.findall(f".//ns:{tag}", namespaces)]
 
 def save_initial_app_profile(app_data):
     """
@@ -48,7 +50,6 @@ def save_initial_app_profile(app_data):
     This is the first insertion with basic information.
     """
     if not app_data:
-        logging.warning("App data is empty, skipping save.")
         return
 
     url = f"{CLOUDFLARE_BASE_URL}/query"
@@ -59,9 +60,6 @@ def save_initial_app_profile(app_data):
 
     # Generate row hash using lastmodify
     row_hash = calculate_row_hash(app_data["url"], app_data["lastmodify"])
-    if not row_hash:
-        logging.error(f"Skipping save for app: {app_data['appname']} due to hash calculation failure.")
-        return
 
     # SQL Query to insert basic app profile
     sql_query = """
@@ -81,12 +79,11 @@ def save_initial_app_profile(app_data):
     payload = {"sql": sql_query, "bindings": values}
 
     try:
-        logging.debug(f"Sending request to save app profile: {app_data['appname']} ({app_data['appid']})")
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        logging.info(f"Successfully saved app profile for {app_data['appname']} ({app_data['appid']}).")
+        logging.info(f"Saved basic app profile for {app_data['appname']} ({app_data['appid']}).")
     except requests.RequestException as e:
-        logging.error(f"Failed to save basic app profile: {e} - Response: {response.text if response else 'No Response'}")
+        logging.error(f"Failed to save basic app profile: {e}")
 
 def fetch_and_parse_sitemap(url):
     """
@@ -99,16 +96,18 @@ def fetch_and_parse_sitemap(url):
         logging.info(f"Successfully fetched sitemap from {url}")
         sitemap_xml = response.text
 
-        # Parse XML to extract all <loc> links
+        # Parse XML to extract all <loc> links using extract_links_from_xml
         tree = ET.ElementTree(ET.fromstring(sitemap_xml))
         root = tree.getroot()
-
-        # Extract all <loc> tags and return their contents
-        loc_tags = [loc.text for loc in root.findall(".//loc")]
+        loc_tags = extract_links_from_xml(root, tag="loc")
+        
         logging.debug(f"Extracted {len(loc_tags)} <loc> links from sitemap.")
         return loc_tags
     except requests.RequestException as e:
         logging.error(f"Failed to fetch sitemap: {e} - URL: {url}")
+        return []
+    except ET.ParseError as e:
+        logging.error(f"XML parsing error for sitemap at URL {url}: {e}")
         return []
 
 def fetch_and_parse_gzip(url):
@@ -128,19 +127,22 @@ def fetch_and_parse_gzip(url):
         tree = ET.ElementTree(ET.fromstring(file_content))
         root = tree.getroot()
 
-        # Extract all <loc> and <lastmod> tags
-        app_data_list = []
-        for loc_tag, lastmod_tag in zip(root.findall(".//loc"), root.findall(".//lastmod")):
-            app_data = {
-                "url": loc_tag.text,
-                "lastmodify": lastmod_tag.text
-            }
-            app_data_list.append(app_data)
+        # Extract all <loc> and <lastmod> tags using extract_links_from_xml
+        loc_tags = extract_links_from_xml(root, tag="loc")
+        lastmod_tags = extract_links_from_xml(root, tag="lastmod")
+
+        app_data_list = [
+            {"url": loc, "lastmodify": lastmod}
+            for loc, lastmod in zip(loc_tags, lastmod_tags)
+        ]
 
         logging.debug(f"Extracted {len(app_data_list)} app data entries from GZipped sitemap.")
         return app_data_list
     except requests.RequestException as e:
         logging.error(f"Failed to fetch or parse GZipped sitemap: {e} - URL: {url}")
+        return []
+    except ET.ParseError as e:
+        logging.error(f"XML parsing error for GZipped sitemap at URL {url}: {e}")
         return []
 
 def process_sitemaps_and_save_profiles():
@@ -150,20 +152,15 @@ def process_sitemaps_and_save_profiles():
     sitemap_url = "https://apps.apple.com/sitemaps_apps_index_app_1.xml"
 
     # Step 1: Fetch and parse the main sitemap
-    logging.info(f"Processing sitemap from URL: {sitemap_url}")
     loc_urls = fetch_and_parse_sitemap(sitemap_url)
-    print('gz counts',len(loc_urls))
+    print('gz count',len(loc_urls))
     for loc_url in loc_urls[:1]:
         # Step 2: Fetch and parse the GZipped sitemap at each <loc> URL
         app_data_list = fetch_and_parse_gzip(loc_url)
-        print('app_data_list counts',len(app_data_list))
+        print('app_data_list count',len(app_data_list))
         
-        # Step 3: Save app profiles in batches
-        if app_data_list:
-            logging.info(f"Processing {len(app_data_list)} app profiles from {loc_url}")
-            batch_process_in_chunks(app_data_list, process_function=batch_process_initial_app_profiles)
-        else:
-            logging.warning(f"No app data found for {loc_url}, skipping.")
+        # Step 3: Save app profiles
+        batch_process_in_chunks(app_data_list, process_function=batch_process_initial_app_profiles)
 
 # Start the process
 process_sitemaps_and_save_profiles()
