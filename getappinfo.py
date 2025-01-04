@@ -147,7 +147,7 @@ def getinfo(url):
             print(f"Error fetching info for {url}: {e}")
             return None
 
-def bulk_scrape_and_save(urls):
+def bulk_scrape_and_save_app_urls(urls):
     """
     Scrape app information for multiple URLs concurrently and save to D1 database.
     """
