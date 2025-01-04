@@ -4,7 +4,7 @@ import os
 import xml.etree.ElementTree as ET
 import logging
 import time
-
+from saveCategoryUrls  import save_category_urls_to_d1
 # Set up logging configuration
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -41,19 +41,27 @@ def fetch_and_decompress_gz(url):
             # Open the .gz file from the response's raw stream
             with gzip.GzipFile(fileobj=response.raw) as gz_file:
                 logger.debug(f"Decompressing .gz file from {url}")
-                # Read and parse the XML content after decompression
-                xml_content = gz_file.read()
-                xml_root = ET.fromstring(xml_content)
-                logger.debug(f"Successfully decompressed and parsed .gz file from {url}")
-                return xml_root
+                # Read the decompressed content as bytes
+                decompressed_content = gz_file.read()
+
+                # Check if the decompressed content seems like XML
+                if decompressed_content[:5] != b"<?xml":
+                    logger.error(f"Decompressed content from {url} does not start with '<?xml'. It may not be valid XML.")
+                    return None
+
+                # Parse XML
+                try:
+                    xml_root = ET.fromstring(decompressed_content)
+                    logger.debug(f"Successfully decompressed and parsed .gz file from {url}")
+                    return xml_root
+                except ET.ParseError as e:
+                    logger.error(f"Failed to parse decompressed XML from {url}: {e}")
+                    return None
     except requests.RequestException as e:
         logger.error(f"Failed to fetch .gz file from {url}: {e}")
         raise
     except OSError as e:
         logger.error(f"Failed to decompress .gz file from {url}: {e}")
-        raise
-    except ET.ParseError as e:
-        logger.error(f"Failed to parse XML from decompressed .gz file from {url}: {e}")
         raise
 
 def process_sitemaps(sitemap_url):
@@ -73,7 +81,8 @@ def process_sitemaps(sitemap_url):
     for gz_link in gz_links:
         try:
             gz_root = fetch_and_decompress_gz(gz_link)
-            category_links.extend(extract_links_from_xml(gz_root))
+            if gz_root:
+                category_links.extend(extract_links_from_xml(gz_root))
         except Exception as e:
             logger.error(f"Failed to process .gz file {gz_link}: {e}")
             continue  # Skip and proceed to the next .gz file
