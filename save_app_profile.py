@@ -170,6 +170,19 @@ def update_app_profile_with_details(app_data):
     except requests.RequestException as e:
         logging.error(f"Failed to update app profile: {e}")
 
+def batch_process_in_chunks(app_profiles, chunk_size=50, process_function=None):
+    """
+    Batch process app profiles in chunks of the specified size (default: 50).
+    """
+    # Split app_profiles into chunks of the specified size
+    for i in range(0, len(app_profiles), chunk_size):
+        chunk = app_profiles[i:i+chunk_size]
+        if process_function:
+            try:
+                process_function(chunk)
+            except Exception as e:
+                logging.error(f"Error processing batch of app profiles: {e}")
+
 def batch_process_initial_app_profiles(app_profiles):
     """
     Batch process and insert initial app profiles with IGNORE to prevent duplicates.
@@ -250,5 +263,5 @@ updated_app_profiles_data = [
 ]
 
 # Batch processing
-batch_process_initial_app_profiles(initial_app_profiles_data)
-batch_process_updated_app_profiles(updated_app_profiles_data)
+# batch_process_in_chunks(initial_app_profiles_data, process_function=batch_process_initial_app_profiles)
+# batch_process_in_chunks(updated_app_profiles_data, process_function=batch_process_updated_app_profiles)
