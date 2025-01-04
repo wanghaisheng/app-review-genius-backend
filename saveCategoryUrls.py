@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
+D1_DATABASE_ID = os.getenv('CLOUDFLARE_D1_DATABASE_ID')
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
 CLOUDFLARE_API_TOKEN = os.getenv('CLOUDFLARE_API_TOKEN')
 CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/d1/database/{D1_DATABASE_ID}"
