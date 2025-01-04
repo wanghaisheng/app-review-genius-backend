@@ -98,6 +98,7 @@ def save_initial_app_profile(app_data):
     current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     
     app_data["updated_at"]=current_time
+    print('to be save data',app_data)
     
 
     # SQL Query to insert basic app profile with IGNORE to prevent duplicates
