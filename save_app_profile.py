@@ -90,27 +90,48 @@ def save_initial_app_profile(app_data):
 
     # Generate row hash using lastmodify
     row_hash = calculate_row_hash(app_data["url"], app_data["lastmodify"])
-    url=app_data["url"].replace('https://','')
-    # https://apps.apple.com/us/app/streaks/id963034692    
-    app_data["appid"]=url.split('/')[-1]
-    app_data["appname"]= url.split('/')[-2]
-    app_data["country"]=url.split('/')[-4]
+    url = app_data["url"].replace('https://', '')
+    
+    # Extract appid and appname from URL structure
+    app_data["appid"] = url.split('/')[-1]
+    app_data["appname"] = url.split('/')[-2]
+    app_data["country"] = url.split('/')[-4]
     current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     
-    app_data["updated_at"]=current_time
-    print('to be save data',app_data)
-    
+    app_data["updated_at"] = current_time
+
+    # Ensure all columns are present, and if any are missing, fill them with None (or default values)
+    app_data.setdefault("releasedate", None)
+    app_data.setdefault("version", None)
+    app_data.setdefault("seller", None)
+    app_data.setdefault("size", None)
+    app_data.setdefault("category", None)
+    app_data.setdefault("lang", None)
+    app_data.setdefault("age", None)
+    app_data.setdefault("copyright", None)
+    app_data.setdefault("pricetype", None)
+    app_data.setdefault("priceplan", None)
 
     # SQL Query to insert basic app profile with IGNORE to prevent duplicates
     sql_query = """
-    INSERT OR IGNORE INTO ios_app_profiles (appid, appname, country, updated_at, lastmodify, row_hash)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT OR IGNORE INTO ios_app_profiles (appid, appname, country, releasedate, version, seller, size, category, lang, age, copyright, pricetype, priceplan, updated_at, lastmodify, row_hash)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     values = (
         app_data["appid"],
         app_data["appname"],
         app_data["country"],
+        app_data["releasedate"],
+        app_data["version"],
+        app_data["seller"],
+        app_data["size"],
+        app_data["category"],
+        app_data["lang"],
+        app_data["age"],
+        app_data["copyright"],
+        app_data["pricetype"],
+        app_data["priceplan"],
         app_data["updated_at"],
         app_data["lastmodify"],
         row_hash
