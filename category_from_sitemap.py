@@ -30,39 +30,7 @@ def extract_links_from_xml(xml_root, tag="loc"):
     """Extract links from XML by a specified tag."""
     return [element.text for element in xml_root.findall(f".//{tag}")]
 
-def save_category_urls_to_d1(urls):
-    """Save category URLs to Cloudflare D1 database."""
-    url = f"{CLOUDFLARE_BASE_URL}/query"
-    headers = {
-        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    create_table_query = """
-        CREATE TABLE IF NOT EXISTS category_urls (
-            id TEXT PRIMARY KEY,
-            url TEXT
-        );
-    """
-    insert_query_template = "INSERT INTO category_urls (id, url) VALUES {values};"
 
-    # Create table if it doesn't exist
-    try:
-        response = requests.post(url, headers=headers, json={"sql": create_table_query})
-        response.raise_for_status()
-    except requests.RequestException as e:
-        print(f"Failed to create category_urls table: {e}")
-        return
-
-    # Prepare and insert links
-    for category_url in urls:
-        hash_id = hashlib.sha256(category_url.encode('utf-8')).hexdigest()
-        try:
-            values = f"('{hash_id}', '{category_url}')"
-            insert_query = insert_query_template.format(values=values)
-            response = requests.post(url, headers=headers, json={"sql": insert_query})
-            response.raise_for_status()
-        except requests.RequestException as e:
-            print(f"Failed to insert URL {category_url}: {e}")
 
 def process_sitemaps(sitemap_url):
     """Process the sitemap index and save category URLs."""
