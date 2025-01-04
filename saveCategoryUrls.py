@@ -63,7 +63,10 @@ def save_category_urls_to_d1(category_urls):
         values = []
 
         for category_url in batch:
+            if '/charts/' not in category_url:
+                continue
             parsed_url = urlparse(category_url)
+            print('curl',category_url)
             path_parts = parsed_url.path.split("/")
             platform = path_parts[-3]
             country = path_parts[-5]
