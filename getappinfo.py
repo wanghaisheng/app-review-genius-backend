@@ -1,5 +1,6 @@
 import requests
 import os
+import hashlib
 import concurrent.futures
 from DataRecorder import Recorder
 from getbrowser import setup_chrome
@@ -19,7 +20,7 @@ browser = setup_chrome()
 
 def create_app_profiles_table():
     """
-    Create the app_profiles table if it does not exist in the D1 database.
+    Create the app_profiles table with an additional row_hash column.
     """
     url = f"{CLOUDFLARE_BASE_URL}/query"
     headers = {
@@ -42,7 +43,8 @@ def create_app_profiles_table():
         age TEXT,
         copyright TEXT,
         pricetype TEXT,
-        priceplan TEXT
+        priceplan TEXT,
+        row_hash TEXT UNIQUE
     );
     """
 
@@ -51,9 +53,16 @@ def create_app_profiles_table():
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        print("Table 'app_profiles' created successfully (if it didn't exist).")
+        print("Table 'ios_app_profiles' created successfully (if it didn't exist).")
     except requests.RequestException as e:
         print(f"Failed to create table: {e}")
+
+def calculate_row_hash(url, updated_at):
+    """
+    Generate a row hash using the URL and updatedAt timestamp.
+    """
+    hash_input = f"{url}{updated_at}"
+    return hashlib.sha256(hash_input.encode()).hexdigest()
 
 def save_app_profile_to_d1(app_data):
     """
@@ -68,9 +77,23 @@ def save_app_profile_to_d1(app_data):
         "Content-Type": "application/json"
     }
 
+    row_hash = calculate_row_hash(app_data["url"], app_data["updated_at"])
     sql_query = """
-    INSERT INTO ios_app_profiles (appid, appname, country, releasedate, version, seller, size, category, lang, age, copyright, pricetype, priceplan)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    INSERT INTO ios_app_profiles (appid, appname, country, releasedate, version, seller, size, category, lang, age, copyright, pricetype, priceplan, row_hash)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(row_hash) DO UPDATE SET
+        appname=excluded.appname,
+        country=excluded.country,
+        releasedate=excluded.releasedate,
+        version=excluded.version,
+        seller=excluded.seller,
+        size=excluded.size,
+        category=excluded.category,
+        lang=excluded.lang,
+        age=excluded.age,
+        copyright=excluded.copyright,
+        pricetype=excluded.pricetype,
+        priceplan=excluded.priceplan;
     """
     
     values = (
@@ -86,7 +109,8 @@ def save_app_profile_to_d1(app_data):
         app_data.get("age"),
         app_data.get("copyright"),
         app_data.get("pricetype"),
-        ','.join(app_data.get("priceplan", []))
+        ','.join(app_data.get("priceplan", [])),
+        row_hash
     )
 
     payload = {"sql": sql_query, "bindings": values}
@@ -111,6 +135,7 @@ def getinfo(url):
             appid = url.split('/')[-1]
             appname = url.split('/')[-2]
             country = url.split('/')[-4]
+            updated_at = tab.ele('.updated-at').text  # Example placeholder for updated timestamp
             
             # Extract version information
             tab.ele('.version-history').click()
@@ -129,9 +154,11 @@ def getinfo(url):
 
             # Return app information as a dictionary
             return {
+                "url": url,
                 "appid": appid,
                 "appname": appname,
                 "country": country,
+                "updated_at": updated_at,
                 "releasedate": version[-1],  # Assuming the last version is the latest
                 "version": version,
                 "seller": seller,
@@ -169,4 +196,4 @@ if __name__ == "__main__":
     ]
 
     # Perform scraping and save to D1
-    bulk_scrape_and_save(urls)
+    bulk_scrape_and_save_app_urls(urls)
