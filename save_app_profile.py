@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Constants for D1 Database
-D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
+D1_DATABASE_ID = os.getenv("CLOUDFLARE_D1_DATABASE_ID")
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
 CLOUDFLARE_API_TOKEN = os.getenv('CLOUDFLARE_API_TOKEN')
 
