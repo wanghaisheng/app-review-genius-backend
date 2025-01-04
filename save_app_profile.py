@@ -82,7 +82,7 @@ def save_initial_app_profile(app_data):
     if not app_data:
         return
 
-    url = f"{CLOUDFLARE_BASE_URL}/query"
+    query_url = f"{CLOUDFLARE_BASE_URL}/query"
     headers = {
         "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
         "Content-Type": "application/json"
@@ -116,7 +116,7 @@ def save_initial_app_profile(app_data):
     payload = {"sql": sql_query, "bindings": values}
 
     try:
-        response = requests.post(url, headers=headers, json=payload)
+        response = requests.post(query_url, headers=headers, json=payload)
         response.raise_for_status()
         logging.info(f"Saved basic app profile for {app_data['appname']} ({app_data['appid']}).")
     except requests.RequestException as e:
