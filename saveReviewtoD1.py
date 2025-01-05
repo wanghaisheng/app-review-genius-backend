@@ -101,4 +101,4 @@ data = [
     {'appid': 'app2', 'appname': 'App 2', 'country': 'UK', 'keyword': 'keyword2', 'score': 4.0, 'userName': 'user2', 'date': '2022-01-02', 'review': 'Good app!'}
 ]
 
-insert_into_ios_review_data(data)
+# insert_into_ios_review_data(data)
