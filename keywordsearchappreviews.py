@@ -240,6 +240,7 @@ async def main():
         current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
         ids = getids_from_keyword(keyword, country)
+        ids=list(set(ids))
         if not ids:
             print(f"No apps found for keyword '{keyword}'")
             return
