@@ -241,6 +241,8 @@ async def main():
 
         ids = getids_from_keyword(keyword, country)
         ids=list(set(ids))
+        ids=ids[:1]
+        
         if not ids:
             print(f"No apps found for keyword '{keyword}'")
             return
@@ -248,7 +250,6 @@ async def main():
         bulk_scrape_and_save_app_urls(ids)
         outfile_reviews_path = f'{RESULT_FOLDER}/{keyword}-app-reviews-{current_time}.csv'
         outfile_reviews = Recorder(outfile_reviews_path)
-        ids=ids[:1]
         tasks = [get_review(url, outfile_reviews, keyword) for url in ids]
         batch_size = 1
         for i in range(0, len(tasks), batch_size):
