@@ -207,7 +207,7 @@ async def get_review(url, outfile, keyword):
                                                        offset=offset)
                 all_reviews.extend(reviews)
 
-        print('aall review')
+        print('get aall review')
         for review in all_reviews:
             item={
                 "appid":app_id,
@@ -222,6 +222,7 @@ async def get_review(url, outfile, keyword):
             items.append(item)
 
         insert_into_ios_review_data(items)
+        print('save aall review')
     
     except Exception as e:
         print(f"Error fetching reviews for URL '{url}': {e}")
