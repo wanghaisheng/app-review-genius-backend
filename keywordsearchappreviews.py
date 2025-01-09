@@ -12,7 +12,7 @@ from app_store_scraper import AppStore
 import requests
 import pandas as pd
 from apicall import get_token,fetch_reviews
-from getappinfo import *
+from get_app_detail import *
 from saveReviewtoD1 import *
 
 # Environment Variables
