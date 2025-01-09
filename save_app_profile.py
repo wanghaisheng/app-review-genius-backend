@@ -57,6 +57,7 @@ def create_app_profiles_table():
         pricetype TEXT,
         priceplan TEXT,
         updated_at TEXT,
+        website TEXT,
         lastmodify TEXT,
         row_hash TEXT UNIQUE
     );
@@ -119,6 +120,8 @@ def save_initial_app_profile(app_data):
     values += f"'{app_data['copyright'] if app_data.get('copyright') else 'NULL'}', "
     values += f"'{app_data['pricetype'] if app_data.get('pricetype') else 'NULL'}', "
     values += f"'{app_data['priceplan'] if app_data.get('priceplan') else 'NULL'}', "
+    values += f"'{app_data['website'] if app_data.get('website') else 'NULL'}', "
+
     values += f"'{app_data['updated_at']}', "
     values += f"'{app_data['lastmodify']}', "
     values += f"'{row_hash}')"
@@ -127,7 +130,7 @@ def save_initial_app_profile(app_data):
     sql_query = """
     INSERT OR IGNORE INTO ios_app_profiles (
         appid, appname, country, url, releasedate, version, seller, size, category, lang, 
-        age, copyright, pricetype, priceplan, updated_at, lastmodify, row_hash
+        age, copyright, pricetype, priceplan, website,updated_at, lastmodify, row_hash
     ) VALUES 
     """
 
@@ -140,154 +143,6 @@ def save_initial_app_profile(app_data):
     except requests.RequestException as e:
         logging.error(f"Failed to save basic app profile: {e}:{payload}\n {response.json()}")
 
-
-def save_initial_app_profile2(app_data):
-    """
-    Save basic app profile data from Sitemap to the D1 database.
-    This is the first insertion with basic information.
-    """
-    if not app_data:
-        return
-
-    query_url = f"{CLOUDFLARE_BASE_URL}/query"
-    headers = {
-        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-
-    # Generate row hash using lastmodify
-    row_hash = calculate_row_hash(app_data["url"], app_data["lastmodify"])
-    url = app_data["url"].replace('https://', '')
-    
-    # Extract appid and appname from URL structure
-    app_data["appid"] = url.split('/')[-1]
-    app_data["appname"] = url.split('/')[-2]
-    app_data["country"] = url.split('/')[-4]
-    current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    
-    app_data["updated_at"] = current_time
-
-    # Replace None with empty strings ("") to avoid issues with Cloudflare D1
-    app_data["releasedate"] = app_data.get("releasedate", "")
-    app_data["version"] = app_data.get("version", "")
-    app_data["seller"] = app_data.get("seller", "")
-    app_data["size"] = app_data.get("size", "")
-    app_data["category"] = app_data.get("category", "")
-    app_data["lang"] = app_data.get("lang", "")
-    app_data["age"] = app_data.get("age", "")
-    app_data["copyright"] = app_data.get("copyright", "")
-    app_data["pricetype"] = app_data.get("pricetype", "")
-    app_data["priceplan"] = app_data.get("priceplan", "")
-
-    # SQL Query to insert basic app profile with IGNORE to prevent duplicates
-    sql_query = """
-    INSERT OR IGNORE INTO ios_app_profiles (
-        appid, appname, country, url, releasedate, version, seller, size, category, lang, 
-        age, copyright, pricetype, priceplan, updated_at, lastmodify, row_hash
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """
-
-    values = (
-        escape_sql(app_data["appid"]),
-        escape_sql(app_data["appname"]),
-        escape_sql(app_data["country"]),
-        escape_sql(app_data["url"]),
-        app_data["releasedate"],
-        app_data["version"],
-        app_data["seller"],
-        app_data["size"],
-        app_data["category"],
-        app_data["lang"],
-        app_data["age"],
-        app_data["copyright"],
-        app_data["pricetype"],
-        app_data["priceplan"],
-        app_data["updated_at"],
-        app_data["lastmodify"],
-        row_hash
-    )
-
-    payload = {"sql": sql_query, "bindings": values}
-
-    try:
-        response = requests.post(query_url, headers=headers, json=payload)
-        response.raise_for_status()
-        logging.info(f"Saved basic app profile for {app_data['appname']} ({app_data['appid']}).")
-    except requests.RequestException as e:
-        logging.error(f"Failed to save basic app profile: {e}:{response.json()}")
-
-def save_initial_app_profile1(app_data):
-    """
-    Save basic app profile data from Sitemap to the D1 database.
-    This is the first insertion with basic information.
-    """
-    if not app_data:
-        return
-
-    query_url = f"{CLOUDFLARE_BASE_URL}/query"
-    headers = {
-        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-
-    # Generate row hash using lastmodify
-    row_hash = calculate_row_hash(app_data["url"], app_data["lastmodify"])
-    url = app_data["url"].replace('https://', '')
-    
-    # Extract appid and appname from URL structure
-    app_data["appid"] = url.split('/')[-1]
-    app_data["appname"] = url.split('/')[-2]
-    app_data["country"] = url.split('/')[-4]
-    current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    
-    app_data["updated_at"] = current_time
-
-    # Ensure all columns are present, and if any are missing, fill them with None (or default values)
-    app_data.setdefault("releasedate", None)
-    app_data.setdefault("version", None)
-    app_data.setdefault("seller", None)
-    app_data.setdefault("size", None)
-    app_data.setdefault("category", None)
-    app_data.setdefault("lang", None)
-    app_data.setdefault("age", None)
-    app_data.setdefault("copyright", None)
-    app_data.setdefault("pricetype", None)
-    app_data.setdefault("priceplan", None)
-
-    # SQL Query to insert basic app profile with IGNORE to prevent duplicates
-    sql_query = """
-    INSERT OR IGNORE INTO ios_app_profiles (appid, appname, country, url,releasedate, version, seller, size, category, lang, age, copyright, pricetype, priceplan, updated_at, lastmodify, row_hash)
-    VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """
-
-    values = (
-        escape_sql(app_data["appid"]),
-        escape_sql(app_data["appname"]),
-        escape_sql(app_data["country"]),
-         escape_sql(app_data["url"]),                  
-        app_data["releasedate"],
-        app_data["version"],
-        app_data["seller"],
-        app_data["size"],
-        app_data["category"],
-        app_data["lang"],
-        app_data["age"],
-        app_data["copyright"],
-        app_data["pricetype"],
-        app_data["priceplan"],
-        app_data["updated_at"],
-        app_data["lastmodify"],
-        row_hash
-    )
-
-    payload = {"sql": sql_query, "bindings": values}
-
-    try:
-        response = requests.post(query_url, headers=headers, json=payload)
-        response.raise_for_status()
-        logging.info(f"Saved basic app profile for {app_data['appname']} ({app_data['appid']}).")
-    except requests.RequestException as e:
-        logging.error(f"Failed to save basic app profile: {e}:{payload}")
 
 def update_app_profile_with_details(app_data):
     """
@@ -318,8 +173,9 @@ def update_app_profile_with_details(app_data):
         copyright = COALESCE(?, copyright),
         pricetype = COALESCE(?, pricetype),
         priceplan = COALESCE(?, priceplan),
+        website = COALESCE(?, website),
         updated_at = COALESCE(?, updated_at)
-    WHERE appid = ?;
+    WHERE url = ?;
     """
 
     values = (
@@ -333,8 +189,9 @@ def update_app_profile_with_details(app_data):
         app_data.get("copyright"),
         app_data.get("pricetype"),
         ','.join(app_data.get("priceplan", [])),
+        app_data.get('website')
         app_data.get("updated_at",current_time),
-        app_data["appid"]
+        app_data["url"]
     )
 
     payload = {"sql": sql_query, "bindings": values}
@@ -344,7 +201,7 @@ def update_app_profile_with_details(app_data):
         response.raise_for_status()
         logging.info(f"Updated app profile for {app_data['appname']} ({app_data['appid']}).")
     except requests.RequestException as e:
-        logging.error(f"Failed to update app profile: {e}")
+        logging.error(f"Failed to update  app profile: {e}:{payload}\n {response.json()}")
 
 def batch_process_in_chunks(app_profiles, chunk_size=50, process_function=None):
     """
