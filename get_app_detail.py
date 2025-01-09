@@ -159,7 +159,7 @@ def getinfo(url):
         try:
             tab = browser.new_tab()
             tab.get(url)
-            
+            print(f'get info for {url}')
             # Extract app details
             appid = url.split('/')[-1]
             appname = url.split('/')[-2]
@@ -170,13 +170,16 @@ def getinfo(url):
             
             # Extract version information
             tab.ele('.version-history').click()
-            version = tab.ele('.we-modal__content__wrapper').texts
+            version = tab.ele('.we-modal__content__wrapper').texts()
             print('find version',version)
+            tab.ele('.we-modal__close').click()
             # Extract additional information
             e = tab.ele('.information-list__item l-column small-12 medium-6 large-4 small-valign-top information-list__item--seller')
             print('find detail',e.texts())
             seller = e.text
             size = e.next().text
+            print('find size',e.next().text)
+            
             category = e.next(2).text
             lang = e.next(4).text
             age = e.next(5).text
