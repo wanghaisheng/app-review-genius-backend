@@ -76,6 +76,7 @@ def getinfo(url):
                 "copyright": copyright,
                 "pricetype": pricetype,
                 "priceplan": priceplan,
+                "lastmodify":current_time,
                 'website':website
             }
         except Exception as e:
