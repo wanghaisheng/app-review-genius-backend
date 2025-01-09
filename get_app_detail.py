@@ -6,6 +6,7 @@ from DataRecorder import Recorder
 from getbrowser import setup_chrome
 from dotenv import load_dotenv
 from  save_app_profile import *
+from datetime import datetime
 load_dotenv()
 
 # Constants for D1 Database
@@ -41,6 +42,7 @@ def create_app_profiles_table():
         category TEXT,
         lang TEXT,
         age TEXT,
+        updateAt TEXT,
         copyright TEXT,
         pricetype TEXT,
         priceplan TEXT,
@@ -83,11 +85,11 @@ def get_existing_row_hash(appid):
         print(f"Failed to fetch existing row_hash: {e}")
         return None
 
-def calculate_row_hash(url, updated_at):
+def calculate_row_hash(url, updatedAt):
     """
     Generate a row hash using the URL and updatedAt timestamp.
     """
-    hash_input = f"{url}{updated_at}"
+    hash_input = f"{url}{updatedAt}"
     return hashlib.sha256(hash_input.encode()).hexdigest()
 
 def save_app_profile_to_d1(app_data):
@@ -103,10 +105,10 @@ def save_app_profile_to_d1(app_data):
         "Content-Type": "application/json"
     }
 
-    row_hash = calculate_row_hash(app_data["url"], app_data["updated_at"])
+    row_hash = calculate_row_hash(app_data["url"], app_data["updatedAt"])
     sql_query = """
-    INSERT INTO ios_app_profiles (appid, appname, country, releasedate, version, seller, size, category, lang, age, copyright, pricetype, priceplan, row_hash)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO ios_app_profiles (appid, appname, country, releasedate, version, seller, size, category, lang, age, updateAt,copyright, pricetype, priceplan, row_hash)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)
     ON CONFLICT(row_hash) DO UPDATE SET
         appname=excluded.appname,
         country=excluded.country,
@@ -117,6 +119,7 @@ def save_app_profile_to_d1(app_data):
         category=excluded.category,
         lang=excluded.lang,
         age=excluded.age,
+        updateAt=excluded.updateAt,
         copyright=excluded.copyright,
         pricetype=excluded.pricetype,
         priceplan=excluded.priceplan;
@@ -161,7 +164,9 @@ def getinfo(url):
             appid = url.split('/')[-1]
             appname = url.split('/')[-2]
             country = url.split('/')[-4]
-            updated_at = tab.ele('.updated-at').text  # Example placeholder for updated timestamp
+            current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+            
+            updatedAt = current_time
             
             # Extract version information
             tab.ele('.version-history').click()
@@ -184,7 +189,7 @@ def getinfo(url):
                 "appid": appid,
                 "appname": appname,
                 "country": country,
-                "updated_at": updated_at,
+                "updatedAt": updatedAt,
                 "releasedate": version[-1],  # Assuming the last version is the latest
                 "version": version,
                 "seller": seller,
