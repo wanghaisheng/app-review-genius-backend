@@ -78,8 +78,82 @@ def calculate_row_hash(url, lastmodify):
     """
     hash_input = f"{url}{lastmodify}"
     return hashlib.sha256(hash_input.encode()).hexdigest()
-
 def save_initial_app_profile(app_data):
+    """
+    Save basic app profile data from Sitemap to the D1 database.
+    This is the first insertion with basic information.
+    """
+    if not app_data:
+        return
+
+    query_url = f"{CLOUDFLARE_BASE_URL}/query"
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    # Generate row hash using lastmodify
+    row_hash = calculate_row_hash(app_data["url"], app_data["lastmodify"])
+    url = app_data["url"].replace('https://', '')
+    
+    # Extract appid and appname from URL structure
+    app_data["appid"] = url.split('/')[-1]
+    app_data["appname"] = url.split('/')[-2]
+    app_data["country"] = url.split('/')[-4]
+    current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    
+    app_data["updated_at"] = current_time
+
+    # Replace None with empty strings ("") to avoid issues with Cloudflare D1
+    app_data["releasedate"] = app_data.get("releasedate", "")
+    app_data["version"] = app_data.get("version", "")
+    app_data["seller"] = app_data.get("seller", "")
+    app_data["size"] = app_data.get("size", "")
+    app_data["category"] = app_data.get("category", "")
+    app_data["lang"] = app_data.get("lang", "")
+    app_data["age"] = app_data.get("age", "")
+    app_data["copyright"] = app_data.get("copyright", "")
+    app_data["pricetype"] = app_data.get("pricetype", "")
+    app_data["priceplan"] = app_data.get("priceplan", "")
+
+    # SQL Query to insert basic app profile with IGNORE to prevent duplicates
+    sql_query = """
+    INSERT OR IGNORE INTO ios_app_profiles (
+        appid, appname, country, url, releasedate, version, seller, size, category, lang, 
+        age, copyright, pricetype, priceplan, updated_at, lastmodify, row_hash
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
+
+    values = (
+        escape_sql(app_data["appid"]),
+        escape_sql(app_data["appname"]),
+        escape_sql(app_data["country"]),
+        escape_sql(app_data["url"]),
+        app_data["releasedate"],
+        app_data["version"],
+        app_data["seller"],
+        app_data["size"],
+        app_data["category"],
+        app_data["lang"],
+        app_data["age"],
+        app_data["copyright"],
+        app_data["pricetype"],
+        app_data["priceplan"],
+        app_data["updated_at"],
+        app_data["lastmodify"],
+        row_hash
+    )
+
+    payload = {"sql": sql_query, "bindings": values}
+
+    try:
+        response = requests.post(query_url, headers=headers, json=payload)
+        response.raise_for_status()
+        logging.info(f"Saved basic app profile for {app_data['appname']} ({app_data['appid']}).")
+    except requests.RequestException as e:
+        logging.error(f"Failed to save basic app profile: {e}:{payload}")
+
+def save_initial_app_profile1(app_data):
     """
     Save basic app profile data from Sitemap to the D1 database.
     This is the first insertion with basic information.
