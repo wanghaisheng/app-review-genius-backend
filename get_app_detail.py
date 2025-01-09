@@ -171,9 +171,10 @@ def getinfo(url):
             # Extract version information
             tab.ele('.version-history').click()
             version = tab.ele('.we-modal__content__wrapper').texts
-            
+            print('find version',version)
             # Extract additional information
             e = tab.ele('.information-list__item l-column small-12 medium-6 large-4 small-valign-top information-list__item--seller')
+            print('find detail',e.texts())
             seller = e.text
             size = e.next().text
             category = e.next(2).text
@@ -181,7 +182,7 @@ def getinfo(url):
             age = e.next(5).text
             copyright = e.next(6).text
             pricetype = e.next(7).text
-            priceplan = e.next(8).texts
+            priceplan = e.next(8).texts()
 
             # Return app information as a dictionary
             return {
