@@ -107,7 +107,7 @@ def getids_from_category(url, outfile):
                 icon = link.ele('.we-lockup__overlay').ele('t:img').link
                 if app_link is None:
                     return 
-                appname = app_link.split('/')[-2]
+                appname = app_link.split('/')[-2].strip()
                 rank = link.ele('.we-lockup__rank').text
                 title = link.ele('.we-lockup__text ').text
                 item={
@@ -118,7 +118,7 @@ def getids_from_category(url, outfile):
                     "cname": cname,
                     "appname": appname,
                     "rank": rank,
-                    "appid": app_link.split('/')[-1],
+                    "appid": app_link.split('/')[-1].strip(),
                     "icon": icon,
                     "link": app_link,
                     "title": title,
@@ -155,6 +155,7 @@ async def main():
     """
     saved1 = True
     downloadreview = False
+    downloadbasicinfo=True
     try:
         os.makedirs(RESULT_FOLDER, exist_ok=True)
         current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
@@ -173,16 +174,26 @@ async def main():
 
         
         # Get reviews concurrently
-        if downloadreview:
-            outfile_reviews_path = f'{RESULT_FOLDER}/top-100-app-reviews-{current_time}.csv'
-            outfile_reviews = Recorder(outfile_reviews_path)
+        outfile_reviews_path = f'{RESULT_FOLDER}/top-100-app-reviews-{current_time}.csv'
+        outfile_reviews = Recorder(outfile_reviews_path)
 
-            df = pd.read_csv(outfile_path)
-            tasks = []  # List of tasks for concurrent execution
+        df = pd.read_csv(outfile_path)
+        tasks = []  # List of tasks for concurrent execution
 
             # Create tasks for each row in the DataFrame
-            result = df.to_dict(orient='records')
-            
+        result = df.to_dict(orient='records')
+        if downloadbasicinfo:
+            urls=[]
+            for  row in result:
+                appid=row.get('appid')
+                r=get_existing_row_hash(appid)
+                if r is None:
+                    url=f"https://apps.apple.com/{row['country'].strip()}/app/{row['appname'].strip()}/{row['appid'].strip()}"
+                    urls.append(url)
+            bulk_scrape_and_save_app_urls(urls)
+        
+        if downloadreview:
+
             for  row in result:
                 tasks.append(get_review(row, outfile_reviews))
 
