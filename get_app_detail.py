@@ -46,6 +46,7 @@ def create_app_profiles_table():
         copyright TEXT,
         pricetype TEXT,
         priceplan TEXT,
+        website TEXT,
         row_hash TEXT UNIQUE
     );
     """
@@ -189,6 +190,7 @@ def getinfo(url):
             if e.next(8):
                 
                 priceplan = e.next(8).texts()
+            website=tab.ele('.link icon icon-after icon-external').link
 
             # Return app information as a dictionary
             return {
@@ -206,7 +208,8 @@ def getinfo(url):
                 "age": age,
                 "copyright": copyright,
                 "pricetype": pricetype,
-                "priceplan": priceplan
+                "priceplan": priceplan,
+                'website':website
             }
         except Exception as e:
             print(f"Error fetching info for {url}: {e}")
