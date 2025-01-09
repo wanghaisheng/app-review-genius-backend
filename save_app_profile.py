@@ -123,7 +123,7 @@ def save_initial_app_profile(app_data):
     values += f"'{app_data['website'] if app_data.get('website') else 'NULL'}', "
 
     values += f"'{app_data['updated_at']}', "
-    values += f"'{app_data['lastmodify']}', "
+    values += f"'{app_data.get('lastmodify',current_time)}', "
     values += f"'{row_hash}')"
 
     # SQL Query to insert basic app profile with IGNORE to prevent duplicates
@@ -174,7 +174,9 @@ def update_app_profile_with_details(app_data):
         pricetype = COALESCE(?, pricetype),
         priceplan = COALESCE(?, priceplan),
         website = COALESCE(?, website),
-        updated_at = COALESCE(?, updated_at)
+        updated_at = COALESCE(?, updated_at),
+        lastmodify = COALESCE(?, lastmodify)
+        
     WHERE url = ?;
     """
 
@@ -191,6 +193,8 @@ def update_app_profile_with_details(app_data):
         ','.join(app_data.get("priceplan", [])),
         app_data.get('website'),
         app_data.get("updated_at",current_time),
+        app_data.get("lastmodify",current_time),
+
         app_data["url"]
     )
 
