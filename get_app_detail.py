@@ -34,7 +34,7 @@ def getinfo(url):
             country = url.split('/')[-4]
             current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
             
-            updatedAt = current_time
+            updated_at = current_time
             
             # Extract version information
             tab.ele('.version-history').click()
@@ -65,7 +65,7 @@ def getinfo(url):
                 "appid": appid,
                 "appname": appname,
                 "country": country,
-                "updatedAt": updatedAt,
+                "updated_at": updated_at,
                 "releasedate": version[-1],  # Assuming the last version is the latest
                 "version": version,
                 "seller": seller,
@@ -91,7 +91,7 @@ def bulk_scrape_and_save_app_urls(urls):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         results = list(executor.map(getinfo, urls))
     
-    batch_process_in_chunks(results, process_function=batch_process_updated_app_profiles)
+    batch_process_in_chunks(results, process_function=batch_process_initial_app_profiles)
 if __name__ == "__main__":
     # Create the table before scraping
     create_app_profiles_table()
