@@ -93,7 +93,7 @@ def insert_into_ios_review_data(data, batch_size=50):
             response.raise_for_status()
             print(f"Inserted batch {i // batch_size + 1} successfully.")
         except requests.RequestException as e:
-            print(f"Failed to insert batch {i // batch_size + 1}: {e}")
+            print(f"Failed to insert batch {i // batch_size + 1}: {e}\n{response.json()}")
 
 # Example usage
 data = [
