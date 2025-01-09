@@ -104,7 +104,7 @@ def save_app_profile_to_d1(app_data):
         "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
         "Content-Type": "application/json"
     }
-
+    print('start to save app profile',url)
     row_hash = calculate_row_hash(app_data["url"], app_data["updatedAt"])
     sql_query = """
     INSERT INTO ios_app_profiles (appid, appname, country, releasedate, version, seller, size, category, lang, age, updateAt,copyright, pricetype, priceplan, row_hash)
