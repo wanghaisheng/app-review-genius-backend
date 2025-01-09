@@ -56,6 +56,32 @@ def create_app_profiles_table():
         print("Table 'ios_app_profiles' created successfully (if it didn't exist).")
     except requests.RequestException as e:
         print(f"Failed to create table: {e}")
+def get_existing_row_hash(appid):
+    """
+    Retrieve the existing row_hash for a given appid.
+    """
+    url = f"{CLOUDFLARE_BASE_URL}/query"
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    sql_query = """
+    SELECT row_hash FROM ios_app_profiles WHERE appid = ? LIMIT 1;
+    """
+    
+    payload = {"sql": sql_query, "bindings": [appid]}
+
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        result = response.json()
+        if result.get("result"):
+            return result["result"][0]["row_hash"]
+        return None
+    except requests.RequestException as e:
+        print(f"Failed to fetch existing row_hash: {e}")
+        return None
 
 def calculate_row_hash(url, updated_at):
     """
