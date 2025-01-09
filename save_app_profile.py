@@ -105,6 +105,70 @@ def save_initial_app_profile(app_data):
     
     app_data["updated_at"] = current_time
 
+    # Prepare values string, replacing None with 'NULL' without quotes
+    values = f"'{escape_sql(app_data['appid'])}', "
+    values += f"'{escape_sql(app_data['appname'])}', "
+    values += f"'{escape_sql(app_data['country'])}', "
+    values += f"'{escape_sql(app_data['url'])}', "
+    values += f"{f"'{escape_sql(app_data['releasedate'])}'" if app_data.get('releasedate') else 'NULL'}, "
+    values += f"{f"'{escape_sql(app_data['version'])}'" if app_data.get('version') else 'NULL'}, "
+    values += f"{f"'{escape_sql(app_data['seller'])}'" if app_data.get('seller') else 'NULL'}, "
+    values += f"{f"'{escape_sql(app_data['size'])}'" if app_data.get('size') else 'NULL'}, "
+    values += f"{f"'{escape_sql(app_data['category'])}'" if app_data.get('category') else 'NULL'}, "
+    values += f"{f"'{escape_sql(app_data['lang'])}'" if app_data.get('lang') else 'NULL'}, "
+    values += f"{f"'{escape_sql(app_data['age'])}'" if app_data.get('age') else 'NULL'}, "
+    values += f"{f"'{escape_sql(app_data['copyright'])}'" if app_data.get('copyright') else 'NULL'}, "
+    values += f"{f"'{escape_sql(app_data['pricetype'])}'" if app_data.get('pricetype') else 'NULL'}, "
+    values += f"{f"'{escape_sql(app_data['priceplan'])}'" if app_data.get('priceplan') else 'NULL'}, "
+    values += f"{f"'{escape_sql(app_data['website'])}'" if app_data.get('website') else 'NULL'}, "
+    values += f"'{escape_sql(app_data['updated_at'])}', "
+    values += f"'{escape_sql(app_data.get('lastmodify', current_time))}', "
+    values += f"'{row_hash}'"
+
+    # SQL Query to insert basic app profile with IGNORE to prevent duplicates
+    sql_query = """
+    INSERT OR IGNORE INTO ios_app_profiles (
+        appid, appname, country, url, releasedate, version, seller, size, category, lang, 
+        age, copyright, pricetype, priceplan, website, updated_at, lastmodify, row_hash
+    ) VALUES 
+    """
+
+    payload = {"sql": sql_query + f"({values})"}
+
+    try:
+        response = requests.post(query_url, headers=headers, json=payload)
+        response.raise_for_status()
+        logging.info(f"Saved basic app profile for {app_data['appname']} ({app_data['appid']}).")
+    except requests.RequestException as e:
+        logging.error(f"Failed to save basic app profile: {e}\n{response.json()}")
+
+
+def save_initial_app_profile1(app_data):
+    """
+    Save basic app profile data from Sitemap to the D1 database.
+    This is the first insertion with basic information.
+    """
+    if not app_data:
+        return
+
+    query_url = f"{CLOUDFLARE_BASE_URL}/query"
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    # Generate row hash using lastmodify
+    row_hash = calculate_row_hash(app_data["url"], app_data["lastmodify"])
+    url = app_data["url"].replace('https://', '')
+    
+    # Extract appid and appname from URL structure
+    app_data["appid"] = url.split('/')[-1]
+    app_data["appname"] = url.split('/')[-2]
+    app_data["country"] = url.split('/')[-4]
+    current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    
+    app_data["updated_at"] = current_time
+
     # Prepare values string, replacing None with 'NULL' or empty strings
     values = f"'{app_data['appid']}', "
     values += f"'{app_data['appname']}', "
