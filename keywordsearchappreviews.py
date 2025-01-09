@@ -185,8 +185,9 @@ async def get_review(url, outfile, keyword):
         
         app = AppStore(country=country, app_name=appname)
 
-        await asyncio.to_thread(app.review, sleep=random.randint(1, 2))
+        await asyncio.to_thread(app.review, sleep=random.randint(0, 1))
         all_reviews=app.reviews
+        print('manual get review')
         items=[]
         if len(all_reviews)==0 or all_reviews is None:
             user_agents = [
