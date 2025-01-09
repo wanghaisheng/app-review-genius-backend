@@ -138,7 +138,7 @@ def save_initial_app_profile(app_data):
         response.raise_for_status()
         logging.info(f"Saved basic app profile for {app_data['appname']} ({app_data['appid']}).")
     except requests.RequestException as e:
-        logging.error(f"Failed to save basic app profile: {e}:{payload}")
+        logging.error(f"Failed to save basic app profile: {e}:{payload}\n {response.json()}")
 
 
 def save_initial_app_profile2(app_data):
