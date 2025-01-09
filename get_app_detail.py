@@ -185,7 +185,10 @@ def getinfo(url):
             age = e.next(5).text
             copyright = e.next(6).text
             pricetype = e.next(7).text
-            priceplan = e.next(8).texts()
+            priceplan=''
+            if e.next(8):
+                
+                priceplan = e.next(8).texts()
 
             # Return app information as a dictionary
             return {
