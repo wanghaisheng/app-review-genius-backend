@@ -246,7 +246,7 @@ async def main():
         bulk_scrape_and_save_app_urls(ids)
         outfile_reviews_path = f'{RESULT_FOLDER}/{keyword}-app-reviews-{current_time}.csv'
         outfile_reviews = Recorder(outfile_reviews_path)
-        # ids=ids[:1]
+        ids=ids[:1]
         tasks = [get_review(url, outfile_reviews, keyword) for url in ids]
         batch_size = 1
         for i in range(0, len(tasks), batch_size):
