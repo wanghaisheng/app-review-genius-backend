@@ -189,7 +189,7 @@ def update_app_profile_with_details(app_data):
         app_data.get("copyright"),
         app_data.get("pricetype"),
         ','.join(app_data.get("priceplan", [])),
-        app_data.get('website')
+        app_data.get('website'),
         app_data.get("updated_at",current_time),
         app_data["url"]
     )
