@@ -105,7 +105,6 @@ def save_initial_app_profile(app_data):
     app_data["updated_at"] = current_time
 
     # Prepare values string, replacing None with 'NULL' or empty strings
-    values = f"('{compute_hash(app_data['appid'], app_data['appname'], app_data['url'])}', "
     values += f"'{app_data['appid']}', "
     values += f"'{app_data['appname']}', "
     values += f"'{app_data['country']}', "
