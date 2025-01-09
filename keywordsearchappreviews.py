@@ -200,7 +200,7 @@ async def get_review(url, outfile, keyword):
             MAX_REVIEWS = 100000+21
             while (offset != None) and (int(offset) <= MAX_REVIEWS):
                 reviews, offset, response_code = fetch_reviews(country=country, 
-                                                       app_name=app_name, 
+                                                       app_name=appname, 
                                                        user_agents=user_agents, 
                                                        app_id=app_id, 
                                                        token=token, 
@@ -241,6 +241,7 @@ async def main():
         if not ids:
             print(f"No apps found for keyword '{keyword}'")
             return
+        print(f'found ids:{ids}')
         bulk_scrape_and_save_app_urls(ids)
         outfile_reviews_path = f'{RESULT_FOLDER}/{keyword}-app-reviews-{current_time}.csv'
         outfile_reviews = Recorder(outfile_reviews_path)
