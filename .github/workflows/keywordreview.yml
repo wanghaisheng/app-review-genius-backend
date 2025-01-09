@@ -40,6 +40,11 @@ jobs:
         env:
           country: ${{ github.event.inputs.country }}          
           keyword: ${{ github.event.inputs.keyword }}          
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.D1_APP_DATABASE_ID }}    
+          RESULT_FOLDER: ./result  # Adjust if necessary
+          OUTPUT_FOLDER: ./output
 
       - name: upload files          
         uses: actions/upload-artifact@v4
