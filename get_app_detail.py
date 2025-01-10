@@ -81,14 +81,16 @@ def getinfo(url):
 
 
             website=tab.ele('.link icon icon-after icon-external').link
+            rating=tab.ele('.we-customer-ratings__averages').text
+            reviewcount=tab.ele('.we-customer-ratings__count small-hide medium-show').text.replace('Ratings','').
             # version_json=''
             # priceplan=''
             # Return app information as a dictionary
             return {
                 "url": url,
                 "appid": appid,
-                "appname": appname,
-                "country": country,
+                "appname": appname.strip(),
+                "country": country.strip(),
                 "updated_at": updated_at,
                 "releasedate": '',  # Assuming the last version is the latest
                 "version": version_json,
@@ -100,6 +102,10 @@ def getinfo(url):
                 "copyright": copyright.split('\n')[-1] if '\n' in copyright else copyright,
                 "pricetype": pricetype.split('\n')[-1] if '\n' in pricetype else pricetype,                
                 "priceplan": priceplan,
+                "rating": rating,
+                "reviewcount": reviewcount,
+
+                
                 "lastmodify":current_time,
                 'website':website
             }
