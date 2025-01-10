@@ -71,6 +71,7 @@ def insert_into_ios_review_data(data, batch_size=50):
                  row['score'], row['userName'], row['date'], row['review']
             )
             try:
+                print('insert data',insert_query,values,len(values))
                 response = requests.post(url, headers=headers, json={"sql": insert_query, "bindings": values})
                 response.raise_for_status()
                 print(f"Inserted row with id {hash_id} successfully.")
