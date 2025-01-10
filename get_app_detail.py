@@ -139,6 +139,7 @@ def bulk_scrape_and_save_app_urls(urls):
     newurls=[]
     for url in urls:
         if not check_if_url_exists(url):
+            print('this app is new,need to scrape info')
             newurls.append(url)
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
