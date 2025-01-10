@@ -81,7 +81,95 @@ def calculate_row_hash(url, lastmodify):
     """
     hash_input = f"{url}{lastmodify}"
     return hashlib.sha256(hash_input.encode()).hexdigest()
+
 def save_initial_app_profile(app_data):
+    """
+    Save basic app profile data from Sitemap to the D1 database.
+    This is the first insertion with basic information.
+    """
+    if not app_data:
+        return
+
+    query_url = f"{CLOUDFLARE_BASE_URL}/query"
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    # Generate row hash using lastmodify
+    row_hash = calculate_row_hash(app_data["url"], app_data["lastmodify"])
+    url = app_data["url"].replace('https://', '')
+
+    # Extract appid and appname from URL structure
+    app_data["appid"] = url.split('/')[-1]
+    app_data["appname"] = url.split('/')[-2]
+    app_data["country"] = url.split('/')[-4]
+    current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    app_data["updated_at"] = current_time
+    # Handle the None values
+    app_data['releasedate'] = str(app_data.get('releasedate',''))
+    app_data['version'] = str(app_data.get('version','')).strip()
+    app_data['seller'] = str(app_data.get('seller','')).strip()
+    app_data['size'] = str(app_data.get('size','')).strip()
+    app_data['category'] = str(app_data.get('category','')).strip()
+    app_data['lang'] = str(app_data.get('lang','')).strip()
+    app_data['age'] = str(app_data.get('age','')).strip()
+    app_data['copyright'] = str(app_data.get('copyright','')).strip()
+    app_data['pricetype'] = str(app_data.get('pricetype','')).strip()
+    app_data['priceplan'] = str(app_data.get('priceplan','')).strip()
+    app_data['ratings'] = str(app_data.get('ratings',''))
+    app_data['website'] = str(app_data.get('website',''))
+    # Convert reviewcount to integer, handle if reviewcount is missing
+    review_count_value = app_data.get("reviewcount",'0')
+    try:
+        review_count = int(float(review_count_value.replace('m','').replace('k','')) * (1000000 if 'm' in review_count_value else 1000 if 'k' in review_count_value else 1))
+    except (ValueError, TypeError):
+        review_count = 0
+        
+    # SQL Query to insert basic app profile with IGNORE to prevent duplicates
+    sql_query = """
+    INSERT OR IGNORE INTO ios_app_profiles (
+        appid, appname, country, url, releasedate,
+        version, seller, size, category, lang, 
+        age, copyright, pricetype, priceplan, ratings,
+        reviewcount,updated_at, website, lastmodify, row_hash
+    ) VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?,?, ?, ?, ?, ?,?, ?, ?,?,?)
+    """
+
+    # Prepare values for the parameterized query
+    values = (
+        str(app_data.get("appid")),
+        str(app_data.get("appname")),
+        str(app_data.get("country")),
+        str(app_data.get("url")),
+        str(app_data.get("releasedate")),
+        str(app_data.get("version")),
+        str(app_data.get("seller")),
+        str(app_data.get("size")),
+        str(app_data.get("category")),
+        str(app_data.get("lang")),
+        str(app_data.get("age")),
+        str(app_data.get("copyright")),
+        str(app_data.get("pricetype")),
+        str(app_data.get("priceplan")),
+        str(app_data.get("ratings")),
+         review_count,
+        str(app_data.get("updated_at",current_time)),
+        str(app_data.get("website")),
+        str(app_data.get("lastmodify", current_time)),
+        str(row_hash))
+    payload = {
+        "sql": sql_query,
+        "bindings": values
+    }
+
+    try:
+        response = requests.post(query_url, headers=headers, json=payload)
+        response.raise_for_status()
+        logging.info(f"Saved basic app profile for {app_data['appname']} ({app_data['appid']}).")
+    except requests.RequestException as e:
+        logging.error(f"Failed to save basic app profile: {e}\n{response.json()}\n {payload}")
+def save_initial_app_profile22(app_data):
     """
     Save basic app profile data from Sitemap to the D1 database.
     This is the first insertion with basic information.
