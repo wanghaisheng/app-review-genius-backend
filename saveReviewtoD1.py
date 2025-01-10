@@ -70,6 +70,7 @@ def insert_into_ios_review_data(data, batch_size=50):
 
     for i in range(0, len(rows_to_insert), batch_size):
         batch = rows_to_insert[i:i + batch_size]
+        print('insert data',batch)
         placeholders = ", ".join(["(?, ?, ?, ?, ?, ?, ?, ?, ?)"] * len(batch))
         insert_query = (
             "INSERT OR IGNORE INTO ios_review_data (id, appid, appname, country, keyword, score, userName, date, review) "
