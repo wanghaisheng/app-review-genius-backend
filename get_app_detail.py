@@ -83,8 +83,10 @@ def getinfo(url):
             website=tab.ele('.link icon icon-after icon-external').link
             rating=tab.ele('.we-customer-ratings__averages').text
             reviewcount=tab.ele('.we-customer-ratings__count small-hide medium-show').text
-            print('find rating',rating,reviewcount)
-            reviewcount=reviewcount.replace('Ratings','').lower()
+            print('find rating',rating)
+            reviewcount=reviewcount.replace('Ratings','')
+            print('find reviewcount',reviewcount)
+            reviewcount=reviewcount.lower()
             if 'k' in reviewcount:
                 reviewcount=int(reviewcount('k',''))*1000
             print('clean  rating',rating,reviewcount)
