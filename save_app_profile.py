@@ -101,7 +101,7 @@ def check_if_url_exists(url_to_check):
         "sql": sql_query
     }
 
-
+    print('start to check record exist',sql_query)
     try:
         with httpx.Client() as client:
              response = client.post(query_url, headers=headers, json=payload)
@@ -110,8 +110,8 @@ def check_if_url_exists(url_to_check):
              if result and result['result']:
                  return bool(result['result'][0][0])
              return False
-    except httpx.RequestError as e:
-        logging.error(f"Failed to check if URL exists: {e}")
+    except Exception as e:
+        logging.error(f"Failed to check if URL exists: {e}:{response.json()}")
         return False
 def save_initial_app_profile(app_data):
     """
