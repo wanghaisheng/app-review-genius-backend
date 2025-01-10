@@ -106,25 +106,30 @@ def save_initial_app_profile(app_data):
     app_data["updated_at"] = current_time
 
     # Prepare values string, replacing None with 'NULL' without quotes
-    values = f"'{escape_sql(app_data['appid'])}', "
-    values += f"'{escape_sql(app_data['appname'])}', "
-    values += f"'{escape_sql(app_data['country'])}', "
-    values += f"'{escape_sql(app_data['url'])}', "
-    values += f"{'NULL' if app_data.get('releasedate') is None else f\"'{escape_sql(app_data['releasedate'])}'\"}, "
-    values += f"{'NULL' if app_data.get('version') is None else f\"'{escape_sql(app_data['version'])}'\"}, "
-    values += f"{'NULL' if app_data.get('seller') is None else f\"'{escape_sql(app_data['seller'])}'\"}, "
-    values += f"{'NULL' if app_data.get('size') is None else f\"'{escape_sql(app_data['size'])}'\"}, "
-    values += f"{'NULL' if app_data.get('category') is None else f\"'{escape_sql(app_data['category'])}'\"}, "
-    values += f"{'NULL' if app_data.get('lang') is None else f\"'{escape_sql(app_data['lang'])}'\"}, "
-    values += f"{'NULL' if app_data.get('age') is None else f\"'{escape_sql(app_data['age'])}'\"}, "
-    values += f"{'NULL' if app_data.get('copyright') is None else f\"'{escape_sql(app_data['copyright'])}'\"}, "
-    values += f"{'NULL' if app_data.get('pricetype') is None else f\"'{escape_sql(app_data['pricetype'])}'\"}, "
-    values += f"{'NULL' if app_data.get('priceplan') is None else f\"'{escape_sql(app_data['priceplan'])}'\"}, "
-    values += f"{'NULL' if app_data.get('website') is None else f\"'{escape_sql(app_data['website'])}'\"}, "
-    values += f"'{escape_sql(app_data['updated_at'])}', "
-    values += f"'{escape_sql(app_data.get('lastmodify', current_time))}', "
-    values += f"'{row_hash}'"
-    
+    values = []
+
+    values.append(f"'{escape_sql(app_data['appid'])}'")
+    values.append(f"'{escape_sql(app_data['appname'])}'")
+    values.append(f"'{escape_sql(app_data['country'])}'")
+    values.append(f"'{escape_sql(app_data['url'])}'")
+    values.append(f"'{escape_sql(app_data['releasedate'])}'" if app_data.get('releasedate') else 'NULL')
+    values.append(f"'{escape_sql(app_data['version'])}'" if app_data.get('version') else 'NULL')
+    values.append(f"'{escape_sql(app_data['seller'])}'" if app_data.get('seller') else 'NULL')
+    values.append(f"'{escape_sql(app_data['size'])}'" if app_data.get('size') else 'NULL')
+    values.append(f"'{escape_sql(app_data['category'])}'" if app_data.get('category') else 'NULL')
+    values.append(f"'{escape_sql(app_data['lang'])}'" if app_data.get('lang') else 'NULL')
+    values.append(f"'{escape_sql(app_data['age'])}'" if app_data.get('age') else 'NULL')
+    values.append(f"'{escape_sql(app_data['copyright'])}'" if app_data.get('copyright') else 'NULL')
+    values.append(f"'{escape_sql(app_data['pricetype'])}'" if app_data.get('pricetype') else 'NULL')
+    values.append(f"'{escape_sql(app_data['priceplan'])}'" if app_data.get('priceplan') else 'NULL')
+    values.append(f"'{escape_sql(app_data['website'])}'" if app_data.get('website') else 'NULL')
+    values.append(f"'{escape_sql(app_data['updated_at'])}'")
+    values.append(f"'{escape_sql(app_data.get('lastmodify', current_time))}'")
+    values.append(f"'{row_hash}'")
+
+# Join all the parts into a single string
+    values_string = ", ".join(values)
+
 
     # SQL Query to insert basic app profile with IGNORE to prevent duplicates
     sql_query = """
@@ -134,7 +139,7 @@ def save_initial_app_profile(app_data):
     ) VALUES 
     """
 
-    payload = {"sql": sql_query + f"({values})"}
+    payload = {"sql": sql_query + values_string}
 
     try:
         response = requests.post(query_url, headers=headers, json=payload)
