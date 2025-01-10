@@ -82,7 +82,10 @@ def getinfo(url):
 
             website=tab.ele('.link icon icon-after icon-external').link
             rating=tab.ele('.we-customer-ratings__averages').text
-            reviewcount=tab.ele('.we-customer-ratings__count small-hide medium-show').text.replace('Ratings','').
+            reviewcount=tab.ele('.we-customer-ratings__count small-hide medium-show').text.replace('Ratings','').lower()
+            if 'k' in reviewcount:
+                reviewcount=int(reviewcount('k',''))*1000
+            
             # version_json=''
             # priceplan=''
             # Return app information as a dictionary
@@ -102,7 +105,7 @@ def getinfo(url):
                 "copyright": copyright.split('\n')[-1] if '\n' in copyright else copyright,
                 "pricetype": pricetype.split('\n')[-1] if '\n' in pricetype else pricetype,                
                 "priceplan": priceplan,
-                "rating": rating,
+                "ratings": rating,
                 "reviewcount": reviewcount,
 
                 
