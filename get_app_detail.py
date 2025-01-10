@@ -85,13 +85,14 @@ def getinfo(url):
             reviewcount=tab.ele('.we-customer-ratings__count small-hide medium-show').text
             print('find rating',rating)
             reviewcount=reviewcount.replace('Ratings','')
-            print('find reviewcount',reviewcount)
             reviewcount=reviewcount.lower()
+            print('find reviewcount',reviewcount)
+
             if 'm' in reviewcount:
-                reviewcount=reviewcount.replace('m','')
+                reviewcount=reviewcount.replace('m','').strip()
                 reviewcount=float(reviewcount)*1000000
             if 'k' in reviewcount:
-                review=reviewcount.replace('k','')
+                review=reviewcount.replace('k','').strip()
                 reviewcount=float(reviewcount)*1000
                 
             reviewcount=int(reviewcount)                
