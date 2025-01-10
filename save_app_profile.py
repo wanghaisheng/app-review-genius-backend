@@ -165,6 +165,7 @@ def save_initial_app_profile(app_data):
          with httpx.Client() as client:
             print('send data to d1 endpoint')
             response = client.post(query_url, headers=headers, json=payload)
+            print('response',response.json())
             response.raise_for_status()
             logging.info(f"Saved basic app profile for {app_data['appname']} ({app_data['appid']}).")
     except httpx.RequestError as e:
