@@ -107,7 +107,8 @@ def save_initial_app_profile(app_data):
     # SQL Query to insert basic app profile with IGNORE to prevent duplicates
     sql_query = """
     INSERT OR IGNORE INTO ios_app_profiles (
-        appid, appname, country, url, releasedate, version, seller, size, category, lang, 
+        appid, appname, country, url, releasedate,
+        version, seller, size, category, lang, 
         age, copyright, pricetype, priceplan, website, updated_at, lastmodify, row_hash
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
@@ -128,8 +129,8 @@ def save_initial_app_profile(app_data):
         app_data.get("copyright"),
         app_data.get("pricetype"),
         app_data.get("priceplan"),
-        app_data.get("website"),
         app_data.get("updated_at"),
+        app_data.get("website"),
         app_data.get("lastmodify", current_time),
         row_hash
     )
