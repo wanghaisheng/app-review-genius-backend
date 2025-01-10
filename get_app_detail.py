@@ -105,9 +105,8 @@ def getinfo(url):
                     priceplan=priceplan.split('\n')
                     priceplan_objects = [
 
-                    {"item": priceplan[i], "price": priceplan[i+1]}
-                            for i in range(0, len(priceplan), 2)
-                    if i + 1 < len(priceplan)  # Ensure there are at least three elements
+                    {"item": priceplan[i].split('$')[0], "price": priceplan[i].split('$')[-1]}
+                            for i in range(0, len(priceplan) if '$' in priceplan[i])
                         ]
                     priceplan = json.dumps(priceplan_objects)  # Convert to JSON string
 
