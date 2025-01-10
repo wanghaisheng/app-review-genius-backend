@@ -81,8 +81,8 @@ def getinfo(url):
 
 
             website=tab.ele('.link icon icon-after icon-external').link
-            version_json=''
-            priceplan=''
+            # version_json=''
+            # priceplan=''
             # Return app information as a dictionary
             return {
                 "url": url,
@@ -90,7 +90,7 @@ def getinfo(url):
                 "appname": appname,
                 "country": country,
                 "updated_at": updated_at,
-                "releasedate": None,  # Assuming the last version is the latest
+                "releasedate": '',  # Assuming the last version is the latest
                 "version": version_json,
                 "seller": seller.split('\n')[-1] if '\n' in seller else seller,
                 "size": size.split('\n')[-1] if '\n' in size else size,
