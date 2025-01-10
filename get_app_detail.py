@@ -90,6 +90,8 @@ def getinfo(url):
 
             if 'm' in reviewcount:
                 reviewcount=reviewcount.replace('m','').strip()
+                print('replace m with ',reviewcount)
+               
                 reviewcount=float(reviewcount)*1000000
             if 'k' in reviewcount:
                 reviewcount=reviewcount.replace('k','').strip()
