@@ -111,10 +111,9 @@ def check_if_url_exists(url_to_check):
                  first_result = result['result'][0]
                  if 'results' in first_result and first_result['results']:
                      key_value = list(first_result['results'][0].keys())[0]
-                     print('check record value',key_value)
                      count=first_result['results'][0][key_value]
-                     print('check record value',count)
-                     if count>=1:
+                     print('check record value',count,type(count))
+                     if int(count)>=1:
                          return True
                  
              return False
