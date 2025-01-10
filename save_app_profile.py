@@ -57,7 +57,7 @@ def create_app_profiles_table():
         pricetype TEXT,
         priceplan TEXT,
         ratings TEXT,
-        reviewcount TEXT,
+        reviewcount INTEGER,
         updated_at TEXT,
         website TEXT,
         lastmodify TEXT,
