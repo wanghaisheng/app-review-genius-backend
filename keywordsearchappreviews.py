@@ -188,7 +188,7 @@ async def get_review(url, outfile, keyword):
         app = AppStore(country=country, app_name=appname)
 
         await asyncio.to_thread(app.review,
-                                how_many=1000, 
+                                how_many=20, 
                                 sleep=random.randint(1, 2))
         # after a datetime object to filter older reviews
  
