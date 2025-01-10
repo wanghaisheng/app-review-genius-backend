@@ -160,8 +160,7 @@ def save_initial_app_profile(app_data):
         "sql": sql_query,
         "bindings": values
     }
-    print("Payload:", payload)
-    print("Headers:",headers)
+
     try:
          with httpx.Client() as client:
             response = client.post(query_url, headers=headers, json=payload)
@@ -227,7 +226,7 @@ def update_app_profile_with_details(app_data):
     payload = {"sql": sql_query, "bindings": values}
 
     try:
-        with httpx.Client() as client:
+         with httpx.Client() as client:
             response = client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             logging.info(f"Updated app profile for {app_data['appname']} ({app_data['appid']}).")
