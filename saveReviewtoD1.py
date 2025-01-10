@@ -1,5 +1,5 @@
 import hashlib
-import requests
+import httpx
 import os
 from dotenv import load_dotenv
 
@@ -38,10 +38,11 @@ def create_table_if_not_exists():
         );
     """
     try:
-        response = requests.post(url, headers=headers, json={"sql": create_query})
-        response.raise_for_status()
-        print("Table created successfully.")
-    except requests.RequestException as e:
+        with httpx.Client() as client:
+            response = client.post(url, headers=headers, json={"sql": create_query})
+            response.raise_for_status()
+            print("Table created successfully.")
+    except httpx.RequestError as e:
         print(f"Failed to create table ios_review_data: {e}")
 
 def insert_into_ios_review_data(data, batch_size=50):
@@ -67,18 +68,17 @@ def insert_into_ios_review_data(data, batch_size=50):
                  row['score'], row['userName'], row['date'], row['review'])
             )
 
-
     for i in range(0, len(rows_to_insert), batch_size):
         batch = rows_to_insert[i:i + batch_size]
-        print('insert data',batch)
         placeholders = ", ".join(["(?, ?, ?, ?, ?, ?, ?, ?, ?)"] * len(batch))
         insert_query = (
             "INSERT OR IGNORE INTO ios_review_data (id, appid, appname, country, keyword, score, userName, date, review) "
             f"VALUES {placeholders};"
         )
         try:
-            response = requests.post(url, headers=headers, json={"sql": insert_query, "bindings": batch})
-            response.raise_for_status()
-            print(f"Inserted batch {i // batch_size + 1} successfully.")
-        except Exception as e:
-            print(f"Failed to insert batch {i // batch_size + 1}: {e}\n{response.json()}:{insert_query}")
+            with httpx.Client() as client:
+                response = client.post(url, headers=headers, json={"sql": insert_query, "bindings": batch})
+                response.raise_for_status()
+                print(f"Inserted batch {i // batch_size + 1} successfully.")
+        except httpx.RequestError as e:
+            print(f"Failed to insert batch {i // batch_size + 1}: {e}\n{response.json()}")
