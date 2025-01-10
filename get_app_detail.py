@@ -79,12 +79,13 @@ def getinfo(url):
                         ]
                     priceplan = json.dumps(priceplan_objects)  # Convert to JSON string
 
-
+            print('find priceplan',priceplan)
             website=tab.ele('.link icon icon-after icon-external').link
             rating=tab.ele('.we-customer-ratings__averages').text
             reviewcount=tab.ele('.we-customer-ratings__count small-hide medium-show').text.replace('Ratings','').lower()
             if 'k' in reviewcount:
                 reviewcount=int(reviewcount('k',''))*1000
+            print('find rating',rating,reviewcount)
             
             # version_json=''
             # priceplan=''
