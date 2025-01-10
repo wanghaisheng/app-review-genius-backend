@@ -160,6 +160,8 @@ def save_initial_app_profile(app_data):
         "sql": sql_query,
         "bindings": values
     }
+    print('sqlquery',sql_query)
+    print('bindings',values)
 
     try:
          with httpx.Client() as client:
