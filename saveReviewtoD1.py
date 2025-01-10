@@ -62,27 +62,25 @@ def insert_into_ios_review_data(data, batch_size=50):
     # Prepare the rows to insert
     rows_to_insert = []
     for row in data:
-            hash_id = compute_hash(row['appid'], row['userName'], row['date'])
-            try:
-                score = float(row['score']) if row['score'] else 0.0
-            except (ValueError, TypeError):
-                score = 0.0
+        hash_id = compute_hash(row['appid'], row['userName'], row['date'])
+        try:
+            score = float(row['score']) if row['score'] else 0.0
+        except (ValueError, TypeError):
+            score = 0.0
 
-            rows_to_insert.append(
+        rows_to_insert.append(
                 (hash_id, row['appid'], row['appname'], row['country'], row['keyword'],
                  score, row['userName'], row['date'], row['review'])
             )
 
-    for i in range(0, len(rows_to_insert), batch_size):
-        batch = rows_to_insert[i:i + batch_size]
-        placeholders = ", ".join(["(?, ?, ?, ?, ?, ?, ?, ?, ?)"] * len(batch))
+        placeholders = ", ".join(list(rows_to_insert))
         insert_query = (
             "INSERT OR IGNORE INTO ios_review_data (id, appid, appname, country, keyword, score, userName, date, review) "
             f"VALUES {placeholders};"
         )
         try:
             with httpx.Client() as client:
-                response = client.post(url, headers=headers, json={"sql": insert_query, "bindings": batch})
+                response = client.post(url, headers=headers, json={"sql": insert_query})
                 response.raise_for_status()
                 print(f"Inserted batch {i // batch_size + 1} successfully.")
         except httpx.RequestError as e:
