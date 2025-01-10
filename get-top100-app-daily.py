@@ -184,14 +184,14 @@ async def main():
             # Create tasks for each row in the DataFrame
         result = df.to_dict(orient='records')
         if downloadbasicinfo:
-            urls=[]
-            for  row in result:
+            # urls=[]
+            # for  row in result:
                 appid=row.get('appid')
-                current_date=datetime.now()
-                r=check_if_url_exists(appid,current_date)
-                if r is False:
-                    url=f"https://apps.apple.com/{row['country'].strip()}/app/{row['appname'].strip()}/{row['appid'].strip()}"
-                    urls.append(url)
+                # current_date=datetime.now()
+                # r=check_if_url_exists(appid,current_date)
+                # if r is False:
+                url=f"https://apps.apple.com/{row['country'].strip()}/app/{row['appname'].strip()}/{row['appid'].strip()}"
+                urls.append(url)
             bulk_scrape_and_save_app_urls(urls)
         
         if downloadreview:
