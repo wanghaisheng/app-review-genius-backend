@@ -84,6 +84,39 @@ def calculate_row_hash(url, lastmodify):
     hash_input = f"{url}{lastmodify}"
     return hashlib.sha256(hash_input.encode()).hexdigest()
 
+def check_if_url_exists(url_to_check, current_date):
+    """
+    Check if a record with the given URL already exists in the database for the current date.
+    """
+    query_url = f"{CLOUDFLARE_BASE_URL}/query"
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    sql_query = f"""
+    SELECT EXISTS(
+        SELECT 1
+        FROM ios_app_profiles
+        WHERE url = '{escape_sql(url_to_check)}'
+        AND strftime('%Y-%m-%d', updated_at) = '{escape_sql(current_date.strftime('%Y-%m-%d'))}'
+    );
+    """
+    payload = {
+        "sql": sql_query
+    }
+
+
+    try:
+        with httpx.Client() as client:
+             response = client.post(query_url, headers=headers, json=payload)
+             response.raise_for_status()
+             result = response.json()
+             if result and result['result']:
+                 return bool(result['result'][0][0])
+             return False
+    except httpx.RequestError as e:
+        logging.error(f"Failed to check if URL exists: {e}")
+        return False
 def save_initial_app_profile(app_data):
     """
     Save basic app profile data from Sitemap to the D1 database.
@@ -240,7 +273,11 @@ def batch_process_initial_app_profiles(app_profiles):
         try:
             if not app_data:
                 continue
-            save_initial_app_profile(app_data)
+            current_date = datetime.now()
+            if not check_if_url_exists(app_data['url'], current_date):
+                save_initial_app_profile(app_data)
+            else:
+                logging.info(f"Skipping profile for {app_data['appname']} ({app_data['appid']}) as it already exists for {current_date.strftime('%Y-%m-%d')}.")
         except Exception as e:
             logging.error(f"Error processing initial app profile {app_data['appid']}: {e}")
 
