@@ -118,9 +118,9 @@ def save_initial_app_profile(app_data):
     app_data['pricetype'] = str(app_data.get('pricetype','')).strip()
     app_data['priceplan'] = str(app_data.get('priceplan','')).strip()
     app_data['ratings'] = str(app_data.get('ratings',''))
+    app_data['reviewcount'] = str(app_data.get('reviewcount',''))
+
     app_data['website'] = str(app_data.get('website',''))
-    # Convert reviewcount to integer, handle if reviewcount is missing
-    review_count_value = app_data.get("reviewcount",'0')
         
     # SQL Query to insert basic app profile with IGNORE to prevent duplicates
     sql_query = """
@@ -149,7 +149,7 @@ def save_initial_app_profile(app_data):
         str(app_data.get("pricetype")),
         str(app_data.get("priceplan")),
         str(app_data.get("ratings")),
-         review_count,
+        str(app_data.get("reviewcount")),
         str(app_data.get("updated_at",current_time)),
         str(app_data.get("website")),
         str(app_data.get("lastmodify", current_time)),
