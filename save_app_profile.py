@@ -57,7 +57,7 @@ def create_app_profiles_table():
         pricetype TEXT,
         priceplan TEXT,
         ratings TEXT,
-        reviewcount INTEGER,
+        reviewcount TEXT,
         updated_at TEXT,
         website TEXT,
         lastmodify TEXT,
@@ -68,7 +68,7 @@ def create_app_profiles_table():
     payload = {"sql": sql_query}
 
     try:
-         with httpx.Client() as client:
+        with httpx.Client() as client:
             response = client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             logging.info("Table 'ios_app_profiles' created successfully (if it didn't exist).")
@@ -121,7 +121,7 @@ def save_initial_app_profile(app_data):
     app_data['pricetype'] = str(app_data.get('pricetype','')).strip()
     app_data['priceplan'] = str(app_data.get('priceplan','')).strip()
     app_data['ratings'] = str(app_data.get('ratings',''))
-    app_data['reviewcount'] = app_data.get('reviewcount',0)
+    app_data['reviewcount'] = str(app_data.get('reviewcount',''))
     app_data['website'] = str(app_data.get('website',''))
     
     # SQL Query to insert basic app profile with IGNORE to prevent duplicates
@@ -151,7 +151,7 @@ def save_initial_app_profile(app_data):
         str(app_data.get("pricetype")),
         str(app_data.get("priceplan")),
         str(app_data.get("ratings")),
-        int(app_data.get("reviewcount")),
+        str(app_data.get("reviewcount")),
         str(app_data.get("updated_at",current_time)),
         str(app_data.get("website")),
         str(app_data.get("lastmodify", current_time)),
@@ -160,7 +160,8 @@ def save_initial_app_profile(app_data):
         "sql": sql_query,
         "bindings": values
     }
-    
+    print("Payload:", payload)
+    print("Headers:",headers)
     try:
          with httpx.Client() as client:
             response = client.post(query_url, headers=headers, json=payload)
@@ -226,7 +227,7 @@ def update_app_profile_with_details(app_data):
     payload = {"sql": sql_query, "bindings": values}
 
     try:
-         with httpx.Client() as client:
+        with httpx.Client() as client:
             response = client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             logging.info(f"Updated app profile for {app_data['appname']} ({app_data['appid']}).")
