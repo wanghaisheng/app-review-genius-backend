@@ -66,8 +66,20 @@ def getinfo(url):
             pricetype = e.next(7).text
             priceplan=''
             if e.next(8):
-                
+                if e.next(8).ele('.we-truncate__button we-truncate__button--top-offset link'):
+                    e.next(8).ele('.we-truncate__button we-truncate__button--top-offset link').click()
                 priceplan = e.next(8).texts()[-1]
+                if '\n' in priceplan:
+                    priceplan=priceplan.split('\n')
+                    priceplan_objects = [
+
+                    {"item": priceplan[i], "price": priceplan[i+1]}
+                            for i in range(0, len(priceplan), 2)
+                    if i + 1 < len(priceplan)  # Ensure there are at least three elements
+                        ]
+                    priceplan = json.dumps(priceplan_objects)  # Convert to JSON string
+
+
             website=tab.ele('.link icon icon-after icon-external').link
 
             # Return app information as a dictionary
