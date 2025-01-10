@@ -48,7 +48,7 @@ def getinfo(url):
     ]
 
             version_json = json.dumps(version_objects)  # Convert to JSON string
-            print('find version',version_json)
+            # print('find version',version_json)
 
             # version=version.replace('\n','--')
             tab.ele('.we-modal__close').click()
@@ -79,7 +79,7 @@ def getinfo(url):
                         ]
                     priceplan = json.dumps(priceplan_objects)  # Convert to JSON string
 
-            print('find priceplan',priceplan)
+            # print('find priceplan',priceplan)
             website=tab.ele('.link icon icon-after icon-external').link
             rating=tab.ele('.we-customer-ratings__averages').text
             reviewcount=tab.ele('.we-customer-ratings__count small-hide medium-show').text
