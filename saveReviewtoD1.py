@@ -11,6 +11,20 @@ CLOUDFLARE_API_TOKEN = os.getenv('CLOUDFLARE_API_TOKEN')
 
 CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/d1/database/{D1_DATABASE_ID}"
 
+import sqlite3
+
+def escape_sql(value):
+    """
+    Safely escape a value by using SQLite's quote method, which handles special characters (e.g., single quotes).
+    """
+    if isinstance(value, str):
+        # Use SQLite's quote method to escape the string
+        connection = sqlite3.connect(':memory:')  # In-memory SQLite database for escaping
+        quoted_value = connection.execute("SELECT quote(?)", (value,)).fetchone()[0]
+        connection.close()
+        return quoted_value
+    return value
+
 def compute_hash(appid, username, date):
     """Compute a unique hash for each row."""
     hash_input = f"{appid}-{username}-{date}"
