@@ -64,14 +64,14 @@ def insert_into_ios_review_data(data, batch_size=50):
     for row in data:
         print('review data',row)
         hash_id = compute_hash(row['appid'], row['userName'], row['date'])
-        try:
-            score = float(row['score']) if row['score'] else 0.0
-        except (ValueError, TypeError):
-            score = 0.0
+        # try:
+            # score = float(row['score']) if row['score'] else 0.0
+        # except (ValueError, TypeError):
+            # score = 0.0
 
         rows_to_insert=[
                 hash_id, row['appid'], row['appname'], row['country'], row['keyword'],
-                 score, row['userName'], row['date'], row['review']
+                 row['score'], row['userName'], row['date'], row['review']
         ]
             
 
