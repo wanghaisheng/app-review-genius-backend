@@ -109,7 +109,7 @@ def save_initial_app_profile(app_data):
     INSERT OR IGNORE INTO ios_app_profiles (
         appid, appname, country, url, releasedate, version, seller, size, category, lang, 
         age, copyright, pricetype, priceplan, website, updated_at, lastmodify, row_hash
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     # Prepare values for the parameterized query
