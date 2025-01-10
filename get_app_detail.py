@@ -40,8 +40,10 @@ def getinfo(url):
             tab.ele('.version-history').click()
             version = tab.ele('.we-modal__content__wrapper').texts()[-1]
             print('find version',version)
-            version=version.replace('Fix known issues.\n','')
-            version=version.replace('\n','--')
+            # version=version.replace('Fix known issues.\n','')
+            version_json = json.dumps(version)  # Convert to JSON string
+
+            # version=version.replace('\n','--')
             tab.ele('.we-modal__close').click()
             # Extract additional information
             e = tab.ele('.information-list__item l-column small-12 medium-6 large-4 small-valign-top information-list__item--seller')
@@ -69,7 +71,7 @@ def getinfo(url):
                 "country": country,
                 "updated_at": updated_at,
                 "releasedate": None,  # Assuming the last version is the latest
-                "version": version,
+                "version": version_json,
                 "seller": seller,
                 "size": size,
                 "category": category,
