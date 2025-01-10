@@ -87,8 +87,8 @@ def getinfo(url):
             reviewcount=reviewcount.replace('Ratings','')
             print('find reviewcount',reviewcount)
             reviewcount=reviewcount.lower()
-            if 'k' in reviewcount:
-                reviewcount=float(reviewcount.replace('k',''))*1000
+            review_count = int(float(reviewcount.replace('m','').replace('k','')) * (1000000 if 'm' in reviewcount else 1000 if 'k' in reviewcount else 1))
+                
             print('clean  rating',rating,reviewcount)
             
             version_json=''
