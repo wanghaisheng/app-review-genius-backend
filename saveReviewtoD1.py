@@ -79,5 +79,5 @@ def insert_into_ios_review_data(data, batch_size=50):
             response = requests.post(url, headers=headers, json={"sql": insert_query, "bindings": batch})
             response.raise_for_status()
             print(f"Inserted batch {i // batch_size + 1} successfully.")
-        except requests.RequestException as e:
+        except Exception as e:
             print(f"Failed to insert batch {i // batch_size + 1}: {e}\n{response.json()}")
