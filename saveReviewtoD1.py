@@ -68,7 +68,7 @@ def insert_into_ios_review_data(data, batch_size=50):
         except (ValueError, TypeError):
             score = 0.0
 
-        rows_to_insert=
+        rows_to_insert=[
                 hash_id, row['appid'], row['appname'], row['country'], row['keyword'],
                  score, row['userName'], row['date'], row['review']
         ]
