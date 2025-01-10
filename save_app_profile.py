@@ -111,9 +111,12 @@ def save_initial_app_profile(app_data):
     INSERT OR IGNORE INTO ios_app_profiles (
         appid, appname, country, url, releasedate,
         version, seller, size, category, lang, 
-        age, copyright, pricetype, priceplan, ratings,reviewcount,
-        updated_at, website, lastmodify, row_hash
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)
+        age, copyright, pricetype, priceplan, ratings,
+        reviewcount,updated_at, website, lastmodify, row_hash
+    ) VALUES (?, ?, ?, ?, ?,
+    ?, ?, ?, ?, ?, 
+    ?, ?, ?, ?, ?, 
+    ?, ?, ?,?,?)
     """
 
     # Prepare values for the parameterized query
@@ -123,16 +126,19 @@ def save_initial_app_profile(app_data):
         app_data.get("country"),
         app_data.get("url"),
         app_data.get("releasedate",''),
+        
         app_data.get("version",'').strip(),
         app_data.get("seller",'').strip(),
         app_data.get("size",'').strip(),
         app_data.get("category",'').strip(),
         app_data.get("lang",'').strip(),
+        
         app_data.get("age",'').strip(),
         app_data.get("copyright",'').strip(),
         app_data.get("pricetype",'').strip(),
         app_data.get("priceplan",'').strip(),
         app_data.get("ratings",''),
+        
         app_data.get("reviewcount",0),
         app_data.get("updated_at",current_time),
         app_data.get("website",''),
@@ -144,7 +150,7 @@ def save_initial_app_profile(app_data):
         "sql": sql_query,
         "bindings": values
     }
-    print('value cout',len(list(values)))
+    print('bindings value cout',len(list(values)))
 
     try:
         response = requests.post(query_url, headers=headers, json=payload)
