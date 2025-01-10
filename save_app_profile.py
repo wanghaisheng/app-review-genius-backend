@@ -140,6 +140,7 @@ def save_initial_app_profile(app_data):
         "sql": sql_query,
         "bindings": values
     }
+    print('value cout',len(list(values)))
 
     try:
         response = requests.post(query_url, headers=headers, json=payload)
