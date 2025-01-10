@@ -188,7 +188,6 @@ async def get_review(url, outfile, keyword):
         await asyncio.to_thread(app.review(how_many=1000), sleep=random.randint(0, 1))
         all_reviews=app.reviews
         print('manual get review')
-        items=[]
         if len(all_reviews)==0 or all_reviews is None:
             user_agents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
@@ -209,6 +208,8 @@ async def get_review(url, outfile, keyword):
                 all_reviews.extend(reviews)
 
         print('get aall review')
+        items=[]
+
         for review in all_reviews:
             item={
                 "appid":app_id,
@@ -233,7 +234,7 @@ async def main():
     """
     Main entry point for asynchronous execution.
     """
-    downloadreview=False
+    downloadreview=True
     try:
         os.makedirs(RESULT_FOLDER, exist_ok=True)
         keyword = os.getenv('keyword', 'bible')
@@ -242,7 +243,7 @@ async def main():
 
         ids = getids_from_keyword(keyword, country)
         ids=list(set(ids))
-        # ids=ids[:1]
+        ids=ids[:1]
         
         if not ids:
             print(f"No apps found for keyword '{keyword}'")
