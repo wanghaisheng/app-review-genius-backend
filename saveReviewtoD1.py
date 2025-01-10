@@ -44,7 +44,7 @@ def create_table_if_not_exists():
             print("Table created successfully.")
     except httpx.RequestError as e:
         print(f"Failed to create table ios_review_data: {e}")
-def insert_into_ios_review_data(data, batch_size=50):
+def insert_into_ios_review_data(data, batch_size=10):
     """Insert rows into the review table with hash checks and batch inserts."""
     url = f"{CLOUDFLARE_BASE_URL}/query"
     headers = {
@@ -119,8 +119,7 @@ def insert_into_ios_review_data1(data, batch_size=50):
         # print('review data',rows_to_insert)
 
         placeholders = ", ".join(list(rows_to_insert))
-        insert_query = 
-            "INSERT OR IGNORE INTO ios_review_data (id, appid, appname, country, keyword, score, userName, date, review) VALUES "
+        insert_query = "INSERT OR IGNORE INTO ios_review_data (id, appid, appname, country, keyword, score, userName, date, review) VALUES "
         insert_query+=placeholders
         print('insert sql',insert_query)
         try:
