@@ -19,7 +19,43 @@ CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLAR
 
 # Initialize Browser
 browser = setup_chrome()
+def parse_version_string(version_string):
+    """
+    Parses a version string with potentially missing notes.
+    """
+    version_list = version_string.split('\n')
+    version_objects = []
+    i = 0
+    while i < len(version_list):
+        version = version_list[i].strip()
+        i += 1
+        date = version_list[i].strip() if i < len(version_list) else ""
+        i += 1
+        notes = version_list[i].strip() if i < len(version_list) else ""
+        i += 1
 
+        # Check if date is not a version and if not, assume is notes or empty
+        if not version and not date and not notes:
+            continue
+        if not version:
+           continue
+        if not is_version_number(version):
+           
+           notes = date if notes == '' else date + "\n" + notes
+           date = version
+           version = ''
+
+        version_objects.append({"version": version, "date": date, "notes": notes})
+
+    return version_objects
+
+def is_version_number(text):
+    """
+    Check if the text is a valid version number format.
+    """
+    # This regex is a basic version number check. Can be customized.
+    import re
+    return bool(re.match(r'^\d+(\.\d+)*(\.\d+[a-z]*)?$', text))
 def getinfo(url):
     """
     Scrape app information from the provided URL.
@@ -40,17 +76,11 @@ def getinfo(url):
             # Extract version information
             tab.ele('.version-history').click()
             version = tab.ele('.we-modal__content__wrapper').texts()[-1]
-            version_list=version.split('\n')
-            version_objects = [
-        {"version": version_list[i], "date": version_list[i+1], "notes": version_list[i+2]}
-        for i in range(0, len(version_list), 3)
-        if i + 2 < len(version_list)  # Ensure there are at least three elements
-    ]
+            version_objects = parse_version_string(version)
 
             version_json = json.dumps(version_objects)  # Convert to JSON string
             # print('find version',version_json)
 
-            # version=version.replace('\n','--')
             tab.ele('.we-modal__close').click()
             # Extract additional information
             e = tab.ele('.information-list__item l-column small-12 medium-6 large-4 small-valign-top information-list__item--seller')
@@ -69,6 +99,8 @@ def getinfo(url):
                 if e.next(8).ele('.we-truncate__button we-truncate__button--top-offset link'):
                     e.next(8).ele('.we-truncate__button we-truncate__button--top-offset link').click()
                 priceplan = e.next(8).texts()[-1]
+                print('find priceplan',priceplan)
+                
                 if '\n' in priceplan:
                     priceplan=priceplan.split('\n')
                     priceplan_objects = [
@@ -79,7 +111,6 @@ def getinfo(url):
                         ]
                     priceplan = json.dumps(priceplan_objects)  # Convert to JSON string
 
-            # print('find priceplan',priceplan)
             website=tab.ele('.link icon icon-after icon-external').link
             rating=tab.ele('.we-customer-ratings__averages').text
             reviewcount=tab.ele('.we-customer-ratings__count small-hide medium-show').text
