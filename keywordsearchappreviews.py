@@ -176,6 +176,8 @@ async def get_review(url, outfile, keyword):
     """
     Asynchronously fetch reviews for the given app and save them.
     """
+    items=[]
+    
     try:
         appname, country = url.split('/')[-2], url.split('/')[-4]
         app_id=url.split('/')[-1]
@@ -213,9 +215,6 @@ async def get_review(url, outfile, keyword):
                 all_reviews.extend(reviews)
 
         print('get aall review')
-        items=[]
-    except Exception as e:
-        print(f"Error fetching reviews for URL '{url}': {e}")
 
         for review in all_reviews:
             item={
@@ -229,6 +228,9 @@ async def get_review(url, outfile, keyword):
                 "review": review['review'].replace('\r', ' ').replace('\n', ' ').strip()
             }
             items.append(item)
+    except Exception as e:
+        print(f"Error fetching reviews for URL '{url}': {e}")
+            
     try:
         insert_into_ios_review_data(items)
         print('save aall review')
