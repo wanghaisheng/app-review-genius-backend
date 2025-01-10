@@ -144,11 +144,13 @@ def save_initial_app_profile(app_data):
     '4+', '2024 Woombit', 'Free', '', '4.9 out of 5',
     17600.0, '2025-01-10-06-07-05', 'https://www.woombit.com', '2025-01-10-06-07-03', 'c9616cefa8ed5bc457f7ac42c916e95ecdc701e6e936e804f5542ce3717086f1'
 )
-
+    sql_query += ', '.join(list(values))
     payload = {
         "sql": sql_query,
         "bindings": values
     }
+    payload = {"sql": sql_query}
+
     print('bindings value cout',len(list(values)))
 
     try:
