@@ -136,6 +136,10 @@ def bulk_scrape_and_save_app_urls(urls):
     Scrape app information for multiple URLs concurrently and save to D1 database.
     """
     create_app_profiles_table()
+    newurls=[]
+    for url in urls:
+        if not check_if_url_exists(app_data['url']):
+            newurls.append(url)
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         results = list(executor.map(getinfo, urls))
