@@ -113,10 +113,7 @@ def save_initial_app_profile(app_data):
         version, seller, size, category, lang, 
         age, copyright, pricetype, priceplan, ratings,
         reviewcount,updated_at, website, lastmodify, row_hash
-    ) VALUES (?, ?, ?, ?, ?,
-    ?, ?, ?, ?, ?, 
-    ?, ?, ?, ?, ?, 
-    ?, ?, ?,?,?)
+    ) VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?,?, ?, ?, ?, ?,?, ?, ?,?,?)
     """
 
     # Prepare values for the parameterized query
@@ -125,26 +122,22 @@ def save_initial_app_profile(app_data):
         app_data.get("appname"),
         app_data.get("country"),
         app_data.get("url"),
-        app_data.get("releasedate",''),
-        
+        app_data.get("releasedate",''),        
         app_data.get("version",'').strip(),
         app_data.get("seller",'').strip(),
         app_data.get("size",'').strip(),
         app_data.get("category",'').strip(),
         app_data.get("lang",'').strip(),
-        
         app_data.get("age",'').strip(),
         app_data.get("copyright",'').strip(),
         app_data.get("pricetype",'').strip(),
         app_data.get("priceplan",'').strip(),
         app_data.get("ratings",''),
-        
         app_data.get("reviewcount",0),
         app_data.get("updated_at",current_time),
         app_data.get("website",''),
         app_data.get("lastmodify", current_time),
-        row_hash
-    )
+        row_hash)
     values = (
     'id6476599889', 'pray-daily-kjv-bible-verse', 'us', 'https://apps.apple.com/us/app/pray-daily-kjv-bible-verse/id6476599889', '',
     '', 'WOOMBIT PTE. LTD.', '130.6 MB', 'Reference', 'English',
