@@ -186,7 +186,7 @@ async def main():
             urls=[]
             for  row in result:
                 appid=row.get('appid')
-                r=get_existing_row_hash(appid)
+                r=check_if_url_exists(appid)
                 if r is None:
                     url=f"https://apps.apple.com/{row['country'].strip()}/app/{row['appname'].strip()}/{row['appid'].strip()}"
                     urls.append(url)
