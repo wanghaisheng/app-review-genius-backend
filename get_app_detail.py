@@ -38,8 +38,10 @@ def getinfo(url):
             
             # Extract version information
             tab.ele('.version-history').click()
-            version = tab.ele('.we-modal__content__wrapper').texts()
+            version = tab.ele('.we-modal__content__wrapper').texts()[-1]
             print('find version',version)
+            version=version.replace('Fix known issues.\n','')
+            version=version.replace('\n','--')
             tab.ele('.we-modal__close').click()
             # Extract additional information
             e = tab.ele('.information-list__item l-column small-12 medium-6 large-4 small-valign-top information-list__item--seller')
@@ -56,7 +58,7 @@ def getinfo(url):
             priceplan=''
             if e.next(8):
                 
-                priceplan = e.next(8).texts()
+                priceplan = e.next(8).texts()[-1]
             website=tab.ele('.link icon icon-after icon-external').link
 
             # Return app information as a dictionary
@@ -66,7 +68,7 @@ def getinfo(url):
                 "appname": appname,
                 "country": country,
                 "updated_at": updated_at,
-                "releasedate": version[-1],  # Assuming the last version is the latest
+                "releasedate": None,  # Assuming the last version is the latest
                 "version": version,
                 "seller": seller,
                 "size": size,
