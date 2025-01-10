@@ -109,7 +109,7 @@ def save_initial_app_profile(app_data):
     current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     app_data["updated_at"] = current_time
 
-     # Handle the None values
+    # Handle the None values
     app_data['releasedate'] = str(app_data.get('releasedate',''))
     app_data['version'] = str(app_data.get('version','')).strip()
     app_data['seller'] = str(app_data.get('seller','')).strip()
@@ -124,54 +124,34 @@ def save_initial_app_profile(app_data):
     app_data['reviewcount'] = str(app_data.get('reviewcount',''))
     app_data['website'] = str(app_data.get('website',''))
     
-    # SQL Query to insert basic app profile with IGNORE to prevent duplicates
-    sql_query = """
+    # SQL Query to insert basic app profile with direct values (SQL INJECTION RISK)
+    sql_query = f"""
     INSERT OR IGNORE INTO ios_app_profiles (
         appid, appname, country, url, releasedate,
         version, seller, size, category, lang, 
         age, copyright, pricetype, priceplan, ratings,
         reviewcount,updated_at, website, lastmodify, row_hash
-    ) VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?,?, ?, ?, ?, ?,?, ?, ?,?,?)
+    ) VALUES (
+        '{escape_sql(app_data.get("appid"))}', '{escape_sql(app_data.get("appname"))}', '{escape_sql(app_data.get("country"))}', '{escape_sql(app_data.get("url"))}', '{escape_sql(app_data.get("releasedate"))}',
+        '{escape_sql(app_data.get("version"))}', '{escape_sql(app_data.get("seller"))}', '{escape_sql(app_data.get("size"))}', '{escape_sql(app_data.get("category"))}', '{escape_sql(app_data.get("lang"))}',
+        '{escape_sql(app_data.get("age"))}', '{escape_sql(app_data.get("copyright"))}', '{escape_sql(app_data.get("pricetype"))}', '{escape_sql(app_data.get("priceplan"))}', '{escape_sql(app_data.get("ratings"))}',
+         '{escape_sql(app_data.get("reviewcount"))}', '{escape_sql(app_data.get("updated_at",current_time))}', '{escape_sql(app_data.get("website"))}', '{escape_sql(app_data.get("lastmodify", current_time))}', '{escape_sql(row_hash)}'
+    )
     """
-
-    # Prepare values for the parameterized query
-    values = (
-        str(app_data.get("appid")),
-        str(app_data.get("appname")),
-        str(app_data.get("country")),
-        str(app_data.get("url")),
-        str(app_data.get("releasedate")),
-        str(app_data.get("version")),
-        str(app_data.get("seller")),
-        str(app_data.get("size")),
-        str(app_data.get("category")),
-        str(app_data.get("lang")),
-        str(app_data.get("age")),
-        str(app_data.get("copyright")),
-        str(app_data.get("pricetype")),
-        str(app_data.get("priceplan")),
-        str(app_data.get("ratings")),
-        str(app_data.get("reviewcount")),
-        str(app_data.get("updated_at",current_time)),
-        str(app_data.get("website")),
-        str(app_data.get("lastmodify", current_time)),
-        str(row_hash))
+    
     payload = {
-        "sql": sql_query,
-        "bindings": values
+        "sql": sql_query
     }
-    print('sqlquery',sql_query)
-    print('bindings',values)
-
+    print("Payload:", payload)
+    print("Headers:",headers)
     try:
          with httpx.Client() as client:
-            print('send data to d1 endpoint')
             response = client.post(query_url, headers=headers, json=payload)
-            print('response',response.json())
             response.raise_for_status()
             logging.info(f"Saved basic app profile for {app_data['appname']} ({app_data['appid']}).")
     except httpx.RequestError as e:
         logging.error(f"Failed to save basic app profile: {e}\n{response.json()}\n {payload}")
+
 
 def update_app_profile_with_details(app_data):
     """
@@ -230,7 +210,7 @@ def update_app_profile_with_details(app_data):
     payload = {"sql": sql_query, "bindings": values}
 
     try:
-         with httpx.Client() as client:
+        with httpx.Client() as client:
             response = client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             logging.info(f"Updated app profile for {app_data['appname']} ({app_data['appid']}).")
