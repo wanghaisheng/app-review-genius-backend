@@ -62,6 +62,8 @@ def parse_price_plan(priceplan):
     Handles cases with no '$' and multiple '$' symbols.
     """
     priceplan_objects = []
+    if '\n' in priceplan:
+        priceplan=priceplan.split('\n')
     if not priceplan:
       return priceplan_objects
     for item in priceplan:
