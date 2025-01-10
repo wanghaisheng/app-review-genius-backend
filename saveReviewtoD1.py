@@ -44,7 +44,65 @@ def create_table_if_not_exists():
             print("Table created successfully.")
     except httpx.RequestError as e:
         print(f"Failed to create table ios_review_data: {e}")
-def insert_into_ios_review_data(data, batch_size=10):
+
+import sqlite3
+
+def insert_into_ios_review_data(data, batch_size=50):
+    """Insert rows into the review table with hash checks and batch inserts."""
+    url = f"{CLOUDFLARE_BASE_URL}/query"
+    headers = {
+        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    create_table_if_not_exists()
+    
+    if not data:
+        print("No data to insert.")
+        return
+
+    # Prepare and execute batch inserts
+    for i in range(0, len(data), batch_size):
+        batch = data[i:i + batch_size]
+        values_list = []
+
+        for row in batch:
+            hash_id = compute_hash(row['appid'], row['userName'], row['date'])
+            score = row['score'] if row['score'] else 0.0
+
+            # Use sqlite3's quote function to safely escape values
+            escaped_values = (
+                sqlite3.Connection('').execute("SELECT quote(?)", (hash_id,)).fetchone()[0],
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['appid'],)).fetchone()[0],
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['appname'],)).fetchone()[0],
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['country'],)).fetchone()[0],
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['keyword'],)).fetchone()[0],
+                score,
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['userName'],)).fetchone()[0],
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['date'],)).fetchone()[0],
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['review'],)).fetchone()[0],
+            )
+
+            values_list.append(f"({', '.join(map(str, escaped_values))})")
+
+        values_str = ", ".join(values_list)
+        insert_query = (
+            "INSERT OR IGNORE INTO ios_review_data (id, appid, appname, country, keyword, score, userName, date, review) VALUES "
+            + values_str + ";"
+        )
+
+        try:
+            with httpx.Client() as client:
+                response = client.post(url, headers=headers, json={"sql": insert_query})
+                response.raise_for_status()
+                print(f"Inserted batch {i // batch_size + 1} successfully.")
+        except httpx.RequestError as e:
+            print(f"Failed to insert batch {i // batch_size + 1}: {e}")
+            if response:
+                print(response.json())
+
+
+def insert_into_ios_review_data2(data, batch_size=10):
     """Insert rows into the review table with hash checks and batch inserts."""
     url = f"{CLOUDFLARE_BASE_URL}/query"
     headers = {
