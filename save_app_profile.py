@@ -108,7 +108,11 @@ def check_if_url_exists(url_to_check):
              response.raise_for_status()
              result = response.json()
              if result and result['result']:
-                 return bool(result['result'][0][0])
+                 first_result = result['result'][0]
+                 if 'results' in first_result and first_result['results']:
+                    key_value = list(first_result['results'][0].keys())[0]
+                    return bool(first_result['results'][0][key_value])
+                 
              return False
     except Exception as e:
         logging.error(f"Failed to check if URL exists: {e}:{response.json()}")
@@ -271,7 +275,7 @@ def batch_process_initial_app_profiles(app_profiles):
         try:
             if not app_data:
                 continue
-            save_initial_app_profile(app_data)
+            # save_initial_app_profile(app_data)
 
             if not check_if_url_exists(app_data['url']):
                 save_initial_app_profile(app_data)
