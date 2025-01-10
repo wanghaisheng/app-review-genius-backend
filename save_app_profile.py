@@ -148,6 +148,9 @@ def save_initial_app_profile(app_data):
         "sql": sql_query,
         "bindings": values
     }
+    print("SQL QUERY",sql_query)
+
+    print('SQL Query Placeholders Count:', sql_query.count('?'))
 
     print('bindings value cout',len(list(values)))
 
