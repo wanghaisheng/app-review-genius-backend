@@ -81,7 +81,8 @@ def getinfo(url):
 
 
             website=tab.ele('.link icon icon-after icon-external').link
-
+            version_json=''
+            priceplan=''
             # Return app information as a dictionary
             return {
                 "url": url,
