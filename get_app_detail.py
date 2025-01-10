@@ -91,8 +91,8 @@ def getinfo(url):
                 reviewcount=float(reviewcount.replace('k',''))*1000
             print('clean  rating',rating,reviewcount)
             
-            # version_json=''
-            # priceplan=''
+            version_json=''
+            priceplan=''
             # Return app information as a dictionary
             return {
                 "url": url,
