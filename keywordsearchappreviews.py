@@ -241,7 +241,7 @@ async def main():
 
         ids = getids_from_keyword(keyword, country)
         ids=list(set(ids))
-        # ids=ids[:1]
+        ids=ids[:1]
         
         if not ids:
             print(f"No apps found for keyword '{keyword}'")
