@@ -145,6 +145,12 @@ def save_initial_app_profile(app_data):
         app_data.get("lastmodify", current_time),
         row_hash
     )
+    values = (
+    'id6476599889', 'pray-daily-kjv-bible-verse', 'us', 'https://apps.apple.com/us/app/pray-daily-kjv-bible-verse/id6476599889', '',
+    '', 'WOOMBIT PTE. LTD.', '130.6 MB', 'Reference', 'English',
+    '4+', '© 2024 Woombit', 'Free', '', '4.9 out of 5',
+    17600.0, '2025-01-10-06-07-05', 'https://www.woombit.com', '2025-01-10-06-07-03', 'c9616cefa8ed5bc457f7ac42c916e95ecdc701e6e936e804f5542ce3717086f1'
+)
 
     payload = {
         "sql": sql_query,
