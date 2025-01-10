@@ -78,7 +78,11 @@ def insert_into_ios_review_data(data, batch_size=50):
         try:
             with httpx.Client() as client:
                 response = client.post(url, headers=headers, json={"sql": insert_query, "bindings": batch})
+                print('save review response',response.json())
                 response.raise_for_status()
                 print(f"Inserted batch {i // batch_size + 1} successfully.")
         except httpx.RequestError as e:
             print(f"Failed to insert batch {i // batch_size + 1}: {e}\n{response.json()}")
+        except Exception as e:
+            print(f"Failed to insert batch {i // batch_size + 1}: {e}\n{response.json()}")
+        
