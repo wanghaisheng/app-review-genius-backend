@@ -114,7 +114,8 @@ def check_if_url_exists(url_to_check):
                      print('check record value',key_value)
                      count=first_result['results'][0][key_value]
                      print('check record value',count)
-                     return bool(count)
+                     if count>=1:
+                         return True
                  
              return False
     except Exception as e:
