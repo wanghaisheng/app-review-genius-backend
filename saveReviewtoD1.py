@@ -73,7 +73,7 @@ def insert_into_ios_review_data(data, batch_size=50):
                  row['score'], row['userName'], row['date'], row['review']
         ]
             
-        print('review data',rows_to_insert)
+        # print('review data',rows_to_insert)
 
         placeholders = ", ".join(list(rows_to_insert))
         insert_query = (
