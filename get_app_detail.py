@@ -56,6 +56,22 @@ def is_version_number(text):
     # This regex is a basic version number check. Can be customized.
     import re
     return bool(re.match(r'^\d+(\.\d+)*(\.\d+[a-z]*)?$', text))
+def parse_price_plan(priceplan):
+    """
+    Parses a price plan list, splitting items by '$' to get item and price.
+    Handles cases with no '$' and multiple '$' symbols.
+    """
+    priceplan_objects = []
+    if not priceplan:
+      return priceplan_objects
+    for item in priceplan:
+        parts = item.split('$')
+        if len(parts) >= 2:
+           priceplan_objects.append({"item": parts[0].strip(), "price": parts[-1].strip()})
+        elif len(parts) == 1:
+            priceplan_objects.append({"item": parts[0].strip(), "price": ""})
+        
+    return priceplan_objects
 def getinfo(url):
     """
     Scrape app information from the provided URL.
@@ -100,15 +116,8 @@ def getinfo(url):
                     e.next(8).ele('.we-truncate__button we-truncate__button--top-offset link').click()
                 priceplan = e.next(8).texts()[-1]
                 print('find priceplan',priceplan)
-                
-                if '\n' in priceplan:
-                    priceplan=priceplan.split('\n')
-                    priceplan_objects = [
-
-                    {"item": priceplan[i].split('$')[0], "price": priceplan[i].split('$')[-1]}
-                            for i in range(0, len(priceplan) if '$' in priceplan[i])
-                        ]
-                    priceplan = json.dumps(priceplan_objects)  # Convert to JSON string
+                priceplan_objects=parse_price_plan(priceplan)
+                priceplan=   json.dumps(priceplan_objects)  # Convert to JSON string
 
             website=tab.ele('.link icon icon-after icon-external').link
             rating=tab.ele('.we-customer-ratings__averages').text
