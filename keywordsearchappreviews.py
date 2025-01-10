@@ -212,6 +212,8 @@ async def get_review(url, outfile, keyword):
 
         print('get aall review')
         items=[]
+    except Exception as e:
+        print(f"Error fetching reviews for URL '{url}': {e}")
 
         for review in all_reviews:
             item={
@@ -225,12 +227,12 @@ async def get_review(url, outfile, keyword):
                 "review": review['review'].replace('\r', ' ').replace('\n', ' ').strip()
             }
             items.append(item)
-
+    try:
         insert_into_ios_review_data(items)
         print('save aall review')
-    
     except Exception as e:
-        print(f"Error fetching reviews for URL '{url}': {e}")
+        print(f"Error save reviews for URL '{url}': {e}")
+        
 
 
 async def main():
