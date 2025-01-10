@@ -1,5 +1,5 @@
 import hashlib
-import httpx
+import requests
 import os
 from dotenv import load_dotenv
 
@@ -38,11 +38,10 @@ def create_table_if_not_exists():
         );
     """
     try:
-        with httpx.Client() as client:
-            response = client.post(url, headers=headers, json={"sql": create_query})
-            response.raise_for_status()
-            print("Table created successfully.")
-    except httpx.RequestError as e:
+        response = requests.post(url, headers=headers, json={"sql": create_query})
+        response.raise_for_status()
+        print("Table created successfully.")
+    except requests.RequestException as e:
         print(f"Failed to create table ios_review_data: {e}")
 
 def insert_into_ios_review_data(data, batch_size=50):
@@ -59,30 +58,21 @@ def insert_into_ios_review_data(data, batch_size=50):
         print("No data to insert.")
         return
 
-    # Prepare the rows to insert
-    rows_to_insert = []
     for row in data:
             hash_id = compute_hash(row['appid'], row['userName'], row['date'])
-            rows_to_insert.append(
-                (hash_id, row['appid'], row['appname'], row['country'], row['keyword'],
-                 row['score'], row['userName'], row['date'], row['review'])
+            
+            insert_query = (
+                "INSERT OR IGNORE INTO ios_review_data (id, appid, appname, country, keyword, score, userName, date, review) "
+                f"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);"
             )
-
-    for i in range(0, len(rows_to_insert), batch_size):
-        batch = rows_to_insert[i:i + batch_size]
-        placeholders = ", ".join(["(?, ?, ?, ?, ?, ?, ?, ?, ?)"] * len(batch))
-        insert_query = (
-            "INSERT OR IGNORE INTO ios_review_data (id, appid, appname, country, keyword, score, userName, date, review) "
-            f"VALUES {placeholders};"
-        )
-        try:
-            with httpx.Client() as client:
-                response = client.post(url, headers=headers, json={"sql": insert_query, "bindings": batch})
-                print('save review response',response.json())
+            
+            values = (
+                hash_id, row['appid'], row['appname'], row['country'], row['keyword'],
+                 row['score'], row['userName'], row['date'], row['review']
+            )
+            try:
+                response = requests.post(url, headers=headers, json={"sql": insert_query, "bindings": values})
                 response.raise_for_status()
-                print(f"Inserted batch {i // batch_size + 1} successfully.")
-        except httpx.RequestError as e:
-            print(f"Failed to insert batch {i // batch_size + 1}: {e}\n{response.json()}")
-        except Exception as e:
-            print(f"Failed to insert batch {i // batch_size + 1}: {e}\n{response.json()}")
-        
+                print(f"Inserted row with id {hash_id} successfully.")
+            except requests.RequestException as e:
+                print(f"Failed to insert row with id {hash_id}: {e}\n{response.json()}")
