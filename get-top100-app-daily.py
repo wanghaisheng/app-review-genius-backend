@@ -15,6 +15,7 @@ from saveReviewtoD1 import *
 from saveCategoryUrls import *
 from saveTop100rank import *
 
+
 # Environment Variables
 D1_DATABASE_ID = os.getenv('CLOUDFLARE_D1_DATABASE_ID')
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
@@ -186,7 +187,8 @@ async def main():
             urls=[]
             for  row in result:
                 appid=row.get('appid')
-                r=check_if_url_exists(appid)
+                current_date=datetime.now()
+                r=check_if_url_exists(appid,current_date)
                 if r is False:
                     url=f"https://apps.apple.com/{row['country'].strip()}/app/{row['appname'].strip()}/{row['appid'].strip()}"
                     urls.append(url)
