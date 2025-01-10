@@ -233,6 +233,7 @@ async def main():
     """
     Main entry point for asynchronous execution.
     """
+    downloadreview=False
     try:
         os.makedirs(RESULT_FOLDER, exist_ok=True)
         keyword = os.getenv('keyword', 'bible')
@@ -241,7 +242,7 @@ async def main():
 
         ids = getids_from_keyword(keyword, country)
         ids=list(set(ids))
-        ids=ids[:1]
+        # ids=ids[:1]
         
         if not ids:
             print(f"No apps found for keyword '{keyword}'")
@@ -250,10 +251,11 @@ async def main():
         bulk_scrape_and_save_app_urls(ids)
         outfile_reviews_path = f'{RESULT_FOLDER}/{keyword}-app-reviews-{current_time}.csv'
         outfile_reviews = Recorder(outfile_reviews_path)
-        tasks = [get_review(url, outfile_reviews, keyword) for url in ids]
-        batch_size = 1
-        for i in range(0, len(tasks), batch_size):
-            await asyncio.gather(*tasks[i:i + batch_size])
+        if downloadreview:
+            tasks = [get_review(url, outfile_reviews, keyword) for url in ids]
+            batch_size = 1
+            for i in range(0, len(tasks), batch_size):
+                await asyncio.gather(*tasks[i:i + batch_size])
 
         outfile_reviews.record()
     except Exception as e:
