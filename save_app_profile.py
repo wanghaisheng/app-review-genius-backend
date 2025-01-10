@@ -180,7 +180,9 @@ def save_initial_app_profile(app_data):
             logging.info(f"Saved basic app profile for {app_data['appname']} ({app_data['appid']}).")
     except httpx.RequestError as e:
         logging.error(f"Failed to save basic app profile: {e}\n{response.json()}\n {payload}")
-
+    except Exception as e:
+        logging.error(f"Failed to save basic app profile: {e}\n{response.json()}\n {payload}")
+        
 
 def update_app_profile_with_details(app_data):
     """
@@ -269,6 +271,8 @@ def batch_process_initial_app_profiles(app_profiles):
         try:
             if not app_data:
                 continue
+            save_initial_app_profile(app_data)
+
             if not check_if_url_exists(app_data['url']):
                 save_initial_app_profile(app_data)
             else:
