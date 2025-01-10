@@ -40,8 +40,14 @@ def getinfo(url):
             # Extract version information
             tab.ele('.version-history').click()
             version = tab.ele('.we-modal__content__wrapper').texts()[-1]
-            # version=version.replace('Fix known issues.\n','')
-            version_json = json.dumps(version)  # Convert to JSON string
+            version_list=version.split('\n')
+            version_objects = [
+        {"version": version_list[i], "date": version_list[i+1], "notes": version_list[i+2]}
+        for i in range(0, len(version_list), 3)
+        if i + 2 < len(version_list)  # Ensure there are at least three elements
+    ]
+
+            version_json = json.dumps(version_objects)  # Convert to JSON string
             print('find version',version_json)
 
             # version=version.replace('\n','--')
@@ -73,13 +79,13 @@ def getinfo(url):
                 "updated_at": updated_at,
                 "releasedate": None,  # Assuming the last version is the latest
                 "version": version_json,
-                "seller": seller,
-                "size": size,
-                "category": category,
-                "lang": lang,
-                "age": age,
-                "copyright": copyright,
-                "pricetype": pricetype,
+                "seller": seller.split('\n')[-1] if '\n' in seller else seller,
+                "size": size.split('\n')[-1] if '\n' in size else size,
+                "category": category.split('\n')[-1] if '\n' in category else category,
+                "lang": lang.split('\n')[-1] if '\n' in lang else lang,
+                "age": age.split('\n')[-1] if '\n' in age else age,
+                "copyright": copyright.split('\n')[-1] if '\n' in copyright else copyright,
+                "pricetype": pricetype.split('\n')[-1] if '\n' in pricetype else pricetype,                
                 "priceplan": priceplan,
                 "lastmodify":current_time,
                 'website':website
