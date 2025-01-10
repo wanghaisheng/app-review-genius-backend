@@ -62,7 +62,6 @@ def insert_into_ios_review_data(data, batch_size=50):
     # Prepare the rows to insert
     rows_to_insert = []
     for row in data:
-        print('review data',row)
         hash_id = compute_hash(row['appid'], row['userName'], row['date'])
         # try:
             # score = float(row['score']) if row['score'] else 0.0
@@ -74,6 +73,7 @@ def insert_into_ios_review_data(data, batch_size=50):
                  row['score'], row['userName'], row['date'], row['review']
         ]
             
+        print('review data',rows_to_insert)
 
         placeholders = ", ".join(list(rows_to_insert))
         insert_query = (
