@@ -56,6 +56,8 @@ def create_app_profiles_table():
         copyright TEXT,
         pricetype TEXT,
         priceplan TEXT,
+        ratings TEXT,
+        reviewcount INTEGER,
         updated_at TEXT,
         website TEXT,
         lastmodify TEXT,
@@ -109,9 +111,9 @@ def save_initial_app_profile(app_data):
     INSERT OR IGNORE INTO ios_app_profiles (
         appid, appname, country, url, releasedate,
         version, seller, size, category, lang, 
-        age, copyright, pricetype, priceplan, 
+        age, copyright, pricetype, priceplan, ratings,reviewcount,
         updated_at, website, lastmodify, row_hash
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)
     """
 
     # Prepare values for the parameterized query
@@ -121,15 +123,17 @@ def save_initial_app_profile(app_data):
         app_data.get("country"),
         app_data.get("url"),
         app_data.get("releasedate",''),
-        app_data.get("version",''),
-        app_data.get("seller",''),
-        app_data.get("size",''),
-        app_data.get("category",''),
-        app_data.get("lang",''),
-        app_data.get("age",''),
-        app_data.get("copyright",''),
-        app_data.get("pricetype",''),
-        app_data.get("priceplan",''),
+        app_data.get("version",'').strip(),
+        app_data.get("seller",'').strip(),
+        app_data.get("size",'').strip(),
+        app_data.get("category",'').strip(),
+        app_data.get("lang",'').strip(),
+        app_data.get("age",'').strip(),
+        app_data.get("copyright",'').strip(),
+        app_data.get("pricetype",'').strip(),
+        app_data.get("priceplan",'').strip(),
+        app_data.get("ratings",''),
+        app_data.get("reviewcount",0),
         app_data.get("updated_at",current_time),
         app_data.get("website",''),
         app_data.get("lastmodify", current_time),
