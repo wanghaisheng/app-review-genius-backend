@@ -121,10 +121,6 @@ def save_initial_app_profile(app_data):
     app_data['website'] = str(app_data.get('website',''))
     # Convert reviewcount to integer, handle if reviewcount is missing
     review_count_value = app_data.get("reviewcount",'0')
-    try:
-        review_count = int(float(review_count_value.replace('m','').replace('k','')) * (1000000 if 'm' in review_count_value else 1000 if 'k' in review_count_value else 1))
-    except (ValueError, TypeError):
-        review_count = 0
         
     # SQL Query to insert basic app profile with IGNORE to prevent duplicates
     sql_query = """
