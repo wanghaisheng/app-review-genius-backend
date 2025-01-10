@@ -274,7 +274,9 @@ def batch_process_initial_app_profiles(app_profiles):
             if not app_data:
                 continue
             current_date = datetime.now()
+            print('check app exist',app_data['url'])
             if not check_if_url_exists(app_data['url'], current_date):
+                print('neew data',app_data)
                 save_initial_app_profile(app_data)
             else:
                 logging.info(f"Skipping profile for {app_data['appname']} ({app_data['appid']}) as it already exists for {current_date.strftime('%Y-%m-%d')}.")
