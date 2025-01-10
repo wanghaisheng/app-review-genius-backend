@@ -133,7 +133,7 @@ def save_initial_app_profile(app_data):
         app_data.get("pricetype",'').strip(),
         app_data.get("priceplan",'').strip(),
         app_data.get("ratings",''),
-        app_data.get("reviewcount",0),
+        int(app_data.get("reviewcount",0)),
         app_data.get("updated_at",current_time),
         app_data.get("website",''),
         app_data.get("lastmodify", current_time),
