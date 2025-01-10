@@ -217,6 +217,8 @@ async def get_review(url, outfile, keyword):
         print('get aall review')
 
         for review in all_reviews:
+            reviewdate = reviewdate['date'].strftime('%Y-%m-%d-%H-%M-%S')
+
             item={
                 "appid":app_id,
                 "appname": appname,
@@ -224,7 +226,7 @@ async def get_review(url, outfile, keyword):
                 "keyword": keyword,
                 "score": review['rating'],
                 "userName": review['userName'].strip(),
-                "date": review['date'],
+                "date": reviewdate,
                 "review": review['review'].replace('\r', ' ').replace('\n', ' ').strip()
             }
             items.append(item)
