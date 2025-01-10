@@ -7,6 +7,7 @@ from getbrowser import setup_chrome
 from dotenv import load_dotenv
 from  save_app_profile import *
 from datetime import datetime
+import json
 load_dotenv()
 
 # Constants for D1 Database
@@ -39,9 +40,9 @@ def getinfo(url):
             # Extract version information
             tab.ele('.version-history').click()
             version = tab.ele('.we-modal__content__wrapper').texts()[-1]
-            print('find version',version)
             # version=version.replace('Fix known issues.\n','')
             version_json = json.dumps(version)  # Convert to JSON string
+            print('find version',version_json)
 
             # version=version.replace('\n','--')
             tab.ele('.we-modal__close').click()
