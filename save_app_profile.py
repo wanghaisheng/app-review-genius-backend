@@ -138,7 +138,7 @@ def save_initial_app_profile(app_data):
         app_data.get("website",''),
         app_data.get("lastmodify", current_time),
         row_hash)
-    values = (
+    test_values = (
     'id6476599889', 'pray-daily-kjv-bible-verse', 'us', 'https://apps.apple.com/us/app/pray-daily-kjv-bible-verse/id6476599889', '',
     '', 'WOOMBIT PTE. LTD.', '130.6 MB', 'Reference', 'English',
     '4+', '2024 Woombit', 'Free', '', '4.9 out of 5',
