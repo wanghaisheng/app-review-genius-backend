@@ -84,22 +84,18 @@ def calculate_row_hash(url, lastmodify):
     hash_input = f"{url}{lastmodify}"
     return hashlib.sha256(hash_input.encode()).hexdigest()
 
-def check_if_url_exists(url_to_check, current_date):
+def check_if_url_exists(url_to_check):
     """
-    Check if a record with the given URL already exists in the database for the current date.
+    Check if a record with the given URL already exists in the database.
     """
     query_url = f"{CLOUDFLARE_BASE_URL}/query"
     headers = {
         "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
         "Content-Type": "application/json"
     }
+
     sql_query = f"""
-    SELECT EXISTS(
-        SELECT 1
-        FROM ios_app_profiles
-        WHERE url = '{escape_sql(url_to_check)}'
-        AND strftime('%Y-%m-%d', updated_at) = '{escape_sql(current_date.strftime('%Y-%m-%d'))}'
-    );
+    SELECT EXISTS(SELECT 1 FROM ios_app_profiles WHERE url = '{escape_sql(url_to_check)}');
     """
     payload = {
         "sql": sql_query
@@ -273,13 +269,10 @@ def batch_process_initial_app_profiles(app_profiles):
         try:
             if not app_data:
                 continue
-            current_date = datetime.now()
-            print('check app exist',app_data['url'])
-            if not check_if_url_exists(app_data['url'], current_date):
-                print('neew data',app_data)
+            if not check_if_url_exists(app_data['url']):
                 save_initial_app_profile(app_data)
             else:
-                logging.info(f"Skipping profile for {app_data['appname']} ({app_data['appid']}) as it already exists for {current_date.strftime('%Y-%m-%d')}.")
+                logging.info(f"Skipping profile for {app_data['appname']} ({app_data['appid']}) as it already exists.")
         except Exception as e:
             logging.error(f"Error processing initial app profile {app_data['appid']}: {e}")
 
