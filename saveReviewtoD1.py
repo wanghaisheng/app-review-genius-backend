@@ -79,6 +79,7 @@ def insert_into_ios_review_data(data, batch_size=50):
             "INSERT OR IGNORE INTO ios_review_data (id, appid, appname, country, keyword, score, userName, date, review) "
             f"VALUES {placeholders};"
         )
+        print('insert sql',insert_query)
         try:
             with httpx.Client() as client:
                 response = client.post(url, headers=headers, json={"sql": insert_query})
