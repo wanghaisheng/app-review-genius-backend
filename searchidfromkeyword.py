@@ -7,3 +7,6 @@
     def search_id_insitemap(self):
     parse sitemap into local csv, upload csv to r2
       
+    def search id from r2 mysql
+
+        https://mp.weixin.qq.com/s/2H89vOHXWyF0n8G0N8kiiA
