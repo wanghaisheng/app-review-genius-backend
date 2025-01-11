@@ -189,22 +189,37 @@ async def get_review(id, outfile,developer):
     url=id.replace('https://','')
     appname=url.split('/')[3]
     country=id.split('/')[1]
+    app_id=url.split('/')[-1]
     
-    app = AppStore(country=country, app_name=appname)
-    await asyncio.to_thread(app.review, sleep=random.randint(1, 2))  # Run in a separate thread to avoid blocking
+    try:
+    
+        app = AppStore(country=country, app_name=appname)
+        await asyncio.to_thread(app.review, sleep=random.randint(1, 2))  # Run in a separate thread to avoid blocking
 
-    for review in app.reviews:
-        item={
+        for review in app.reviews:
+            reviewdate = review['date'].strftime('%Y-%m-%d-%H-%M-%S')
+        
+            item={
+                "appid":app_id,
+                "keyword": keyword,
+                "score": review['rating'],
+                "userName": review['userName'].strip(),
+                            "date": reviewdate,
+                "review": review['review'].replace('\r', ' ').replace('\n', ' ').strip()
+
             "appname":appname,
             "country":country,
             "developer":developer
         }
-        item['score'] = review['rating']
-        item['userName'] = review['userName']
-        item['review'] = review['review'].replace('\r', ' ').replace('\n', ' ')
 
+    except Exception as e:
+        print(f"Error fetching reviews for URL '{url}': {e}")
         
-        outfile.add_data(item)
+    try:
+        insert_into_ios_review_data(items)
+        print('save aall review')
+    except Exception as e:
+        print(f"Error save reviews for URL '{url}': {e}")
 
 
 async def main():
