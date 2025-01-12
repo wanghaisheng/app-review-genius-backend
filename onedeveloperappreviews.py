@@ -11,6 +11,8 @@ from getbrowser import setup_chrome
 from app_store_scraper import AppStore
 import requests
 import random
+from saveReviewtoD1 import *
+
 # Environment Variables
 D1_DATABASE_ID = os.getenv('D1_APP_DATABASE_ID')
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
@@ -193,7 +195,7 @@ async def get_review(id, outfile,developer):
     appname=url.split('/')[3]
     country=id.split('/')[1]
     app_id=url.split('/')[-1]
-    
+    print('get review for url',id)
     try:
     
         app = AppStore(country=country, app_name=appname)
