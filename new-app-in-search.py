@@ -240,6 +240,7 @@ async def process_url(semaphore, session, item):
         url=item.get("url")
         print(f"[INFO] Processing app: {url}")
         item = await get_app_runs(session, item)
+        # get app name intitle google search count 
         print(f"[INFO] save statics: {item}")
         
         if item is not None:
