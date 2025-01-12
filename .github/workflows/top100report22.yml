@@ -37,4 +37,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-ranking-reports
-          path: . # Replace with path to generated report if report is not in root directory
+          path: ./result # Replace with path to generated report if report is not in root directory
