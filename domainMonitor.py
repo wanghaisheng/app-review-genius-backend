@@ -152,7 +152,7 @@ class DomainMonitor:
         cleaned_title = re.sub(r'(攻略|评测|资讯|下载|官网|专区|合集|手游|网游|页游|主机游戏|单机游戏)', '', title)
         return cleaned_title.strip()
 
-    def monitor_site(self, site, time_range, max_pages=3,advanced_query=None):
+    def monitor_site(self, site, time_range, max_pages=100,advanced_query=None):
         """
         监控单个网站，考虑分页
         :param site: 网站域名
