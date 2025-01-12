@@ -270,11 +270,11 @@ async def main():
 
             # Create tasks for each row in the DataFrame
             
-            tasks = [get_review(url, outfile_reviews, developer) for url in ids]
+        tasks = [get_review(url, outfile_reviews, developer) for url in ids]
             
-            batch_size = 2
-            for i in range(0, len(tasks), batch_size):
-                await asyncio.gather(*tasks[i:i + batch_size])
+        batch_size = 2
+        for i in range(0, len(tasks), batch_size):
+            await asyncio.gather(*tasks[i:i + batch_size])
 
             # Run all review tasks concurrently
         await asyncio.gather(*tasks)
