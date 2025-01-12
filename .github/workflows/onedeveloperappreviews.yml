@@ -3,11 +3,11 @@ name: ios developer all app reviews
 on:
   workflow_dispatch:
     inputs:
-      country:
-        description: 'us or cn '
+      url:
+        description: 'https://apps.apple.com/us/developer/kooapps/id290924809 '
         type: string
         required: False
-        default: 'us'
+        default: 'https://apps.apple.com/us/developer/kooapps/id290924809'
       keyword:
         description: 'like bible'
         type: string
@@ -38,7 +38,7 @@ jobs:
       - name: Run the scraping script
         run: python  onedeveloperappreviews.py
         env:
-          country: ${{ github.event.inputs.country }}          
+          url: ${{ github.event.inputs.url }}          
           keyword: ${{ github.event.inputs.keyword }}          
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
