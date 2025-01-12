@@ -246,6 +246,7 @@ async def main():
             return 
             
         ids=get_ids_from_developer_page(url)        
+        print('ids',ids)
         developername=url.replace('https://','').replace('/','-')
         developer=url.replace('https://','').split('/')[3]
         # Get reviews concurrently
