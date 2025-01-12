@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 from  save_app_profile import *
 from datetime import datetime
 import json
+import time
+import random
+
 load_dotenv()
 
 # Constants for D1 Database
@@ -80,6 +83,8 @@ def getinfo(url):
     """
     if url:
         try:
+            time.sleep(random.uniform(2, 5))
+            
             tab = browser.new_tab()
             tab.get(url)
             print(f'get info for {url}')
