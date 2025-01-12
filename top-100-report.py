@@ -556,7 +556,7 @@ def write_json_to_file(data, filename):
     """
     try:
         with open(filename, 'w') as f:
-            json.dump(data, f, indent=4) # indent=4 for pretty formatting
+            json.dump(data, f, indent=4, default=str)
         print(f"Successfully wrote JSON to '{filename}'")
     except Exception as e:
         print(f"Error writing JSON to file '{filename}': {e}")
