@@ -11,41 +11,67 @@ class AppIDFinder:
         self.app_name = app_name
         self._base_landing_url = base_landing_url
         self._response = None
-        self._client = httpx.Client()  # Create an httpx client
+        self._client = httpx.Client()
 
     def _get(self, url, params=None):
         try:
             self._response = self._client.get(url, params=params)
-            self._response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+            self._response.raise_for_status()
             return self._response
         except httpx.HTTPError as e:
             print(f"HTTP Error: {e}")
             return None
 
-
-    def search_id_ingoogle(self, max_pages=3):
-        search_url = "https://www.google.com/search"
-        app_ids = []
-        
-        for page in range(max_pages):
-            params = {"q": f"app store {self.app_name}", "start": str(page * 10)}
-            response = self._get(search_url, params=params)
-
-            if response is None:
-                print(f"Failed to get results for page {page +1}. Skipping")
-                continue # Skip page if request failed
-
-            pattern = fr"{self._base_landing_url}/[a-z]{{2}}/.+?/id([0-9]+)"
-            matches = re.findall(pattern, response.text)
-            app_ids.extend(matches)
-
-            time.sleep(1) # Add a short delay to avoid rate limiting (optional)
+    def search_id_ingoogle(self, max_results=5000):
+            search_url = "https://www.google.com/search"
+            app_ids = []
             
-        if not app_ids:
-            return None
-        
-        return app_ids
+            #Initial Request to get total results
+            params = {"q": f"app store {self.app_name}"}
+            response = self._get(search_url, params=params)
+            
+            if response is None:
+              print("Initial request to google failed.")
+              return None
+            
+            soup = BeautifulSoup(response.text, "html.parser")
 
+            result_stats_div = soup.find('div', id='result-stats')
+
+            if result_stats_div:
+                result_text = result_stats_div.text
+                # Extract total results number from the text like 'About 6,640,000 results'
+                match = re.search(r"About ([\d,]+) results", result_text)
+                if match:
+                    total_results = int(match.group(1).replace(",", ""))
+                    print(f"Total results: {total_results}")
+                    max_pages = min(max_results, total_results) // 10 # Google has 10 results per page, but max results 100
+
+                else:
+                    print("Could not find result count. using 1 page")
+                    max_pages = 1 # Could not find results
+            else:
+               print("Could not find result count. using 1 page")
+               max_pages = 1 # Could not find results
+
+            for page in range(max_pages):
+               params = {"q": f"app store {self.app_name}", "start": str(page * 10)}
+               response = self._get(search_url, params=params)
+
+               if response is None:
+                  print(f"Failed to get results for page {page +1}. Skipping")
+                  continue
+
+               pattern = fr"{self._base_landing_url}/[a-z]{{2}}/.+?/id([0-9]+)"
+               matches = re.findall(pattern, response.text)
+               app_ids.extend(matches)
+
+               time.sleep(1)
+
+            if not app_ids:
+                return None
+
+            return app_ids
 
     def search_id_insitemap(self, sitemap_url, csv_filename="sitemap_data.csv"):
         """Parses a sitemap, extracts app IDs, saves to CSV, and uploads to R2."""
@@ -68,7 +94,6 @@ class AppIDFinder:
                 if match:
                     app_data.append({"url":url, "app_id": match.group(1)})
 
-
             # Save to local CSV
             with open(csv_filename, "w", newline="", encoding="utf-8") as csvfile:
               fieldnames = ["url", "app_id"]
@@ -85,11 +110,11 @@ class AppIDFinder:
             print(f"Successfully Uploaded csv to r2")
 
 
-            return True # Return True if process was successful
+            return True
 
         except Exception as e:
            print(f"Error processing sitemap: {e}")
-           return False # Return False on error
+           return False
 
 
 
@@ -116,16 +141,11 @@ class AppIDFinder:
 
 
     def close_client(self):
-        """Closes the httpx client."""
         if self._client:
             self._client.close()
 
-
     def __del__(self):
-        """Ensure client is closed on deallocation."""
         self.close_client()
-
-
 
 if __name__ == '__main__':
     app_name = "Clash of Clans"
