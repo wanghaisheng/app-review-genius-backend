@@ -191,19 +191,20 @@ async def upsert_app_data(session,item, max_retries=3, retry_delay=5):
     current_time = datetime.utcnow().isoformat()
 
     url=item.get('url')
-    run_count=item.get('run_count')
     google_indexAt=item.get('google_indexAt',None)
     wayback_createAt=item.get('wayback_createAt',None)
     cc_createAt=item.get('cc_createAt',None)
     sitemap_createAt=item.get('sitemap_createAt',None)
     
     sql = f"""
-    INSERT INTO ios_new_apps (url, run_count, google_indexAt,wayback_createAt, cc_createAt, updateAt)
-    VALUES ('{url}', {run_count}, 
+    INSERT INTO ios_new_apps (url, google_indexAt,wayback_createAt, cc_createAt, sitemap_createAt,updateAt)
+    VALUES ('{url}',  
     
             {f"'{google_indexAt}'" if google_indexAt else 'NULL'}, 
             {f"'{wayback_createAt}'" if wayback_createAt else 'NULL'}, 
             {f"'{cc_createAt}'" if cc_createAt else 'NULL'}, 
+            {f"'{sitemap_createAt}'" if sitemap_createAt else 'NULL'}, 
+
             '{current_time}')
     ON CONFLICT (url) DO UPDATE
     SET run_count = {run_count}, 
@@ -342,7 +343,8 @@ async def main():
             results=d.monitor_site(site=baseUrl,time_range='24h')
             print('==',results)
             print("[INFO] google search check  complete.")
-            new_apps=[]
+            new_apps_urls=[]
+            new_items=[]
             if results and len(results)>1:
                 gindex=int(datetime.now().strftime('%Y%m%d'))
                 items=[]
@@ -365,15 +367,16 @@ async def main():
                     if not url in appurls:
                         print('check url is existing')
                         existing_apps.append(item)
-                        new_apps.append(url)
+                        new_apps_urls.append(url)
+                        new_items.append(item)
             print('clean google search url item',new_apps)
             
             
-            # await asyncio.gather(*(process_new_app(semaphore, session, item) for item in new_apps))
-        new_apps=new_apps[:100]
+            await asyncio.gather(*(process_new_app(semaphore, session, item) for item in new_items))
+        new_apps_urls=new_apps_urls[:100]
         print("[INFO] url detect complete.")
         print("[INFO] update popular space count.")
-        bulk_scrape_and_save_app_urls(new_apps)
+        bulk_scrape_and_save_app_urls(new_apps_urls)
 
 
 
