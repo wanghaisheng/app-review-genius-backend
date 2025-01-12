@@ -429,7 +429,7 @@ async def main():
                         existing_apps.append(item)
                         new_apps_urls.append(url)
                         new_items.append(item)
-            print('clean google search url item',new_apps_urls)
+            print('clean google search url item',len(new_apps_urls),new_apps_urls)
             
             
             await asyncio.gather(*(process_new_app(semaphore, session, item) for item in new_items))
