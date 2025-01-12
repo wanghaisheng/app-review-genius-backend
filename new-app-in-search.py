@@ -403,7 +403,7 @@ async def main():
             print("[INFO] google search check  complete.")
             new_apps_urls=[]
             new_items=[]
-            results=results[:10]
+            # results=results[:10]
             
             if results and len(results)>1:
                 gindex=int(datetime.now().strftime('%Y%m%d'))
