@@ -199,12 +199,10 @@ async def upsert_app_data(session,item, max_retries=3, retry_delay=5):
     sql = f"""
     INSERT INTO ios_new_apps (url, google_indexAt,wayback_createAt, cc_createAt, sitemap_createAt,updateAt)
     VALUES ('{url}',  
-    
             {f"'{google_indexAt}'" if google_indexAt else 'NULL'}, 
             {f"'{wayback_createAt}'" if wayback_createAt else 'NULL'}, 
             {f"'{cc_createAt}'" if cc_createAt else 'NULL'}, 
             {f"'{sitemap_createAt}'" if sitemap_createAt else 'NULL'}, 
-
             '{current_time}')
     ON CONFLICT (url) DO UPDATE
     SET updateAt = '{current_time}',
@@ -224,12 +222,12 @@ async def upsert_app_data(session,item, max_retries=3, retry_delay=5):
                 print(f"[INFO] Data upserted for {url}.")
                 return
         except aiohttp.ClientError as e:
-            print(f"[ERROR] Attempt {attempt + 1} failed: {e}")
+            print(f"[ERROR] Attempt {attempt + 1} failed: {e}:{response.json()}")
             if attempt < max_retries - 1:
                 print(f"[INFO] Retrying in {retry_delay} seconds...")
                 await asyncio.sleep(retry_delay)
         except Exception as e:
-            print(f"[ERROR] Unexpected error on attempt {attempt + 1}: {e}")
+            print(f"[ERROR] Unexpected error on attempt {attempt + 1}: {e}:{response.json()}")
             if attempt < max_retries - 1:
                 print(f"[INFO] Retrying in {retry_delay} seconds...")
                 await asyncio.sleep(retry_delay)
@@ -344,6 +342,8 @@ async def main():
             print("[INFO] google search check  complete.")
             new_apps_urls=[]
             new_items=[]
+            results=results[:10]
+            
             if results and len(results)>1:
                 gindex=int(datetime.now().strftime('%Y%m%d'))
                 items=[]
@@ -372,7 +372,6 @@ async def main():
             
             
             await asyncio.gather(*(process_new_app(semaphore, session, item) for item in new_items))
-        new_apps_urls=new_apps_urls[:100]
         print("[INFO] url detect complete.")
         print("[INFO] update popular space count.")
         bulk_scrape_and_save_app_urls(new_apps_urls)
