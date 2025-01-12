@@ -539,7 +539,7 @@ def generate_report(analysis, timeframe="all", custom_date=None):
       "custom_range": custom_date,
       "analysis": analysis
     }
-
+    print('report json',report)
     report_json = json.dumps(report, indent=4)
     logging.info(f"Report:\n{report_json}")
 
