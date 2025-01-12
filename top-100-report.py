@@ -629,8 +629,8 @@ def process_report(timeframe="all", custom_date=None):
     if not data:
         return None
     
-    review_data = fetch_reviews_from_d1(start_date, end_date)
-
+    # review_data = fetch_reviews_from_d1(start_date, end_date)
+    print('fetch data',len(data),data[:5])
     report = {}
     report['app_performance_report'] = analyze_app_performance(data)
     report['market_trend_report'] = analyze_market_trends(data)
