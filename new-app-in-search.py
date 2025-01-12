@@ -356,7 +356,7 @@ async def main():
                         continue
                     if '/developer/' in url:
                         continue
-                    url=baseUrl+appname[0]+'/'+appname[1]+'/'+appname[2]
+                    # url=baseUrl+appname[0]+'/'+appname[1]+'/'+appname[2]
                     if url in appurls:
                         continue
                     item['url']=url
