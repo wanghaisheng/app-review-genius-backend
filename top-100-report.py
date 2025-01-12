@@ -18,6 +18,7 @@ load_dotenv()
 D1_DATABASE_ID = os.getenv('CLOUDFLARE_D1_DATABASE_ID')
 CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID')
 CLOUDFLARE_API_TOKEN = os.getenv('CLOUDFLARE_API_TOKEN')
+RESULT_FOLDER = os.getenv('RESULT_FOLDER')
 
 # Constants
 CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/d1/database/{D1_DATABASE_ID}"
@@ -543,6 +544,24 @@ def generate_report(analysis, timeframe="all", custom_date=None):
     logging.info(f"Report:\n{report_json}")
 
     return report_json
+import json
+
+def write_json_to_file(data, filename):
+    """
+    Writes a Python dictionary (or other JSON-serializable object) to a file as JSON.
+
+    Args:
+      data: The Python object to serialize to JSON.
+      filename: The path to the file to write the JSON to.
+    """
+    try:
+        with open(filename, 'w') as f:
+            json.dump(data, f, indent=4) # indent=4 for pretty formatting
+        print(f"Successfully wrote JSON to '{filename}'")
+    except Exception as e:
+        print(f"Error writing JSON to file '{filename}': {e}")
+
+
 
 def process_report(timeframe="all", custom_date=None):
     start_date, end_date = get_start_and_end_date(timeframe, custom_date)
@@ -738,24 +757,28 @@ if __name__ == "__main__":
       logging.info(f"Report for last week generated")
     else:
       logging.info("No report was generated for last week")
+    output_file = "my_data.json"
+    os.makedirs(RESULT_FOLDER, exist_ok=True)
+    
+    write_json_to_file(report_last_week, os.path.join(RESULT_FOLDER,output_file))
 
     # Generate report for last month
-    report_last_month = process_report(timeframe="last month")
-    if report_last_month:
-       logging.info(f"Report for last month generated")
-    else:
-        logging.info("No report was generated for last month")
+    # report_last_month = process_report(timeframe="last month")
+    # if report_last_month:
+       # logging.info(f"Report for last month generated")
+    # else:
+        # logging.info("No report was generated for last month")
 
     # Generate report for custom date range
-    report_custom = process_report(timeframe="custom", custom_date="2024-01-01")
-    if report_custom:
-        logging.info(f"Report for custom date generated")
-    else:
-        logging.info("No report was generated for custom date")
+    # report_custom = process_report(timeframe="custom", custom_date="2024-01-01")
+    # if report_custom:
+        # logging.info(f"Report for custom date generated")
+    # else:
+        # logging.info("No report was generated for custom date")
 
     # Generate default report for all data
-    report_all = process_report()
-    if report_all:
-         logging.info(f"Report for all data generated")
-    else:
-      logging.info("No report was generated for all data")
+    # report_all = process_report()
+    # if report_all:
+         # logging.info(f"Report for all data generated")
+    # else:
+      # logging.info("No report was generated for all data")
