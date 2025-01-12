@@ -201,7 +201,15 @@ async def get_review(id, outfile,developer):
     try:
     
         app = AppStore(country=country, app_name=appname)
-        await asyncio.to_thread(app.review, sleep=random.randint(1, 2))  # Run in a separate thread to avoid blocking
+        how_many=None
+        if how_many:
+            await asyncio.to_thread(app.review,
+                                how_many=how_many, 
+                                sleep=random.randint(1, 2))
+        else:
+             await asyncio.to_thread(app.review,
+                                sleep=random.randint(1, 2))
+
 
         for review in app.reviews:
             reviewdate = review['date'].strftime('%Y-%m-%d-%H-%M-%S')
@@ -262,8 +270,8 @@ async def main():
 
             # Create tasks for each row in the DataFrame
             
-        for  id in ids:
-            tasks.append(get_review(id, outfile_reviews,developer))
+            tasks = [get_review(url, outfile_reviews, developer) for url in ids]
+            
             batch_size = 2
             for i in range(0, len(tasks), batch_size):
                 await asyncio.gather(*tasks[i:i + batch_size])
