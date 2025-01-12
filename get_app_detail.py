@@ -95,16 +95,18 @@ def getinfo(url):
             current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
             
             updated_at = current_time
-            
+            version=[]
             # Extract version information
-            tab.ele('.version-history').click()
-            version = tab.ele('.we-modal__content__wrapper').texts()[-1]
-            version_objects = parse_version_string(version)
+            if  tab.ele('.version-history'):
+                tab.ele('.version-history').click()
+                version = tab.ele('.we-modal__content__wrapper').texts()[-1]
+                if version
+                version_objects = parse_version_string(version)
 
-            version_json = json.dumps(version_objects)  # Convert to JSON string
+                version_json = json.dumps(version_objects)  # Convert to JSON string
             # print('find version',version_json)
 
-            tab.ele('.we-modal__close').click()
+                tab.ele('.we-modal__close').click()
             # Extract additional information
             e = tab.ele('.information-list__item l-column small-12 medium-6 large-4 small-valign-top information-list__item--seller')
             print('find detail',e.texts())
