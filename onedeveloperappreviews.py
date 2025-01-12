@@ -171,10 +171,12 @@ def get_ids_from_developer_page(url):
             tab = browser.new_tab()
             tab.get(url)
             print('detect apps')
+            baseurl='https://apps.apple.com/'
             links=tab.ele(f'@href^{baseurl}')
             if links:
                 for i in links:
-                    urls.append(i.link)
+                    if '/app/' in i.link:
+                        urls.append(i.link)
             return urls
         except Exception as e:
             print(f"Error fetching app URLs for {url}: {e}")
