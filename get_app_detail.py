@@ -83,7 +83,7 @@ def getinfo(url):
     """
     if url:
         try:
-            time.sleep(random.uniform(2, 5))
+            time.sleep(random.uniform(1, 2))
             
             tab = browser.new_tab()
             tab.get(url)
@@ -176,30 +176,52 @@ def getinfo(url):
         except Exception as e:
             print(f"Error fetching info for {url}: {e}")
             return None
-
-def bulk_scrape_and_save_app_urls(urls):
+        finally:
+           if tab:
+              tab.close()
+def process_url(url):
     """
-    Scrape app information for multiple URLs concurrently and save to D1 database.
+    Helper function to fetch and process information from a single URL.
+    """
+    try:
+        if not check_if_url_exists(url):
+             print(f'this app is new,need to scrape info {url}')
+             return getinfo(url)
+        else:
+            print(f"URL {url} already exists, skipping")
+            return None
+    except Exception as e:
+        print(f"Error processing URL {url}: {e}")
+        return None
+def bulk_scrape_and_save_app_urls(urls, batch_size=10):
+    """
+    Scrape app information for multiple URLs concurrently using a batch approach.
     """
     create_app_profiles_table()
-    newurls=[]
-    for url in urls:
-        if not check_if_url_exists(url):
-            print('this app is new,need to scrape info')
-            newurls.append(url)
-
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        results = list(executor.map(getinfo, urls))
     
-    batch_process_in_chunks(results, process_function=batch_process_initial_app_profiles)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        for i in range(0, len(urls), batch_size):
+            batch_urls = urls[i:i + batch_size]
+            
+            results = list(executor.map(process_url, batch_urls))
+            
+            batch_process_in_chunks(results, process_function=batch_process_initial_app_profiles)
+            time.sleep(random.uniform(2, 5))
+
+
 if __name__ == "__main__":
     # Create the table before scraping
     create_app_profiles_table()
 
     # List of URLs to scrape
     urls = [
-        "https://apps.apple.com/us/app/captiono-ai-subtitles/id6538722927",
-        "https://apps.apple.com/us/app/example-app/id1234567890"
+         "https://apps.apple.com/us/app/captiono-ai-subtitles/id6538722927",
+        "https://apps.apple.com/us/app/example-app/id1234567890",
+        "https://apps.apple.com/us/app/another-app/id9876543210",
+        "https://apps.apple.com/us/app/yet-another-app/id1122334455",
+         "https://apps.apple.com/us/app/test/id1222334455",
+        "https://apps.apple.com/us/app/test2/id1222334456"
+       
     ]
 
     # Perform scraping and save to D1
