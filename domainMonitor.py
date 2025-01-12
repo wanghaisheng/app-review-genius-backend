@@ -5,12 +5,11 @@ from datetime import datetime, timedelta
 import time
 import re
 import logging
-from urllib.parse import quote
+from urllib.parse import quote, urlparse, parse_qs
 import random
+import logging
 
-# 输入domain  获取最近一天新增的url
-# 输入domain +关键词 获取最近一天该网站更新的url 比如 amazon+yoga
-#
+
 class DomainMonitor:
     def __init__(self, sites_file="game_sites.txt"):
         """
@@ -44,11 +43,12 @@ class DomainMonitor:
         except FileNotFoundError:
             print(f"Sites file {filename} not found!")
             return []
-    def build_google_search_url(self, site, time_range):
+    def build_google_search_url(self, site, time_range, start=0):
         """
         构建Google搜索URL
         :param site: 网站域名
         :param time_range: 时间范围('24h' or '1w')
+        :param start: start position for pagination
         :return: 编码后的搜索URL
         """
         base_url = "https://www.google.com/search"
@@ -63,7 +63,34 @@ class DomainMonitor:
         params = {
             'q': query,
             'tbs': tbs,
-            'num': 100  # 每页结果数
+            'num': 100,  # 每页结果数
+            'start': start
+        }
+        
+        query_string = '&'.join([f'{k}={quote(str(v))}' for k, v in params.items()])
+        return f"{base_url}?{query_string}"
+
+    def build_google_advanced_search_url(self, query, time_range, start=0):
+        """
+        构建Google高级搜索URL
+         :param query: Advanced search query including operators
+        :param time_range: 时间范围
+        :param start: start position for pagination
+        :return: 编码后的搜索URL
+        """
+        base_url = "https://www.google.com/search"
+        if time_range == '24h':
+            tbs = 'qdr:d'  # 最近24小时
+        elif time_range == '1w':
+            tbs = 'qdr:w'  # 最近1周
+        else:
+            raise ValueError("Invalid time range")
+
+        params = {
+            'q': query,
+            'tbs': tbs,
+             'num': 100,
+            'start': start
         }
         
         query_string = '&'.join([f'{k}={quote(str(v))}' for k, v in params.items()])
@@ -125,33 +152,55 @@ class DomainMonitor:
         cleaned_title = re.sub(r'(攻略|评测|资讯|下载|官网|专区|合集|手游|网游|页游|主机游戏|单机游戏)', '', title)
         return cleaned_title.strip()
 
-    def monitor_site(self, site, time_range):
+    def monitor_site(self, site, time_range, max_pages=3,advanced_query=None):
         """
-        监控单个网站
+        监控单个网站，考虑分页
         :param site: 网站域名
         :param time_range: 时间范围
+        :param max_pages: 最大页数
+        :param advanced_query: advanced search query to use with the build_google_advanced_search_url if set, or else uses the default
         :return: 搜索结果列表
         """
-        search_url = self.build_google_search_url(site, time_range)
-        self.logger.info(f"Monitoring {site} for {time_range} timeframe")
-        
-        try:
-            response = requests.get(search_url, headers=self.headers)
-            if response.status_code == 200:
-                results = self.extract_search_results(response.text)
-                self.logger.info(f"Found {len(results)} results for {site}")
-                return results
-            else:
-                self.logger.error(f"Failed to fetch results for {site}: Status code {response.status_code}")
-                return []
-        except Exception as e:
-            self.logger.error(f"Error monitoring {site}: {str(e)}")
-            return []
+        all_results = []
+        for page in range(max_pages):
+            start = page * 100 #google default 100 results per page
+            if advanced_query:
+                search_url = self.build_google_advanced_search_url(advanced_query, time_range, start)
 
-    def monitor_all_sites(self, time_ranges=None):
+            else:
+                 search_url = self.build_google_search_url(site, time_range, start)
+
+            self.logger.info(f"Monitoring {site} for {time_range}, page {page+1}")
+
+            try:
+                response = requests.get(search_url, headers=self.headers)
+                response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+                results = self.extract_search_results(response.text)
+                if not results:  # If no results are found for a page, assume there are no more pages
+                    self.logger.info(f"No more results found for {site} on page {page+1}")
+                    break
+                
+                all_results.extend(results)
+                self.logger.info(f"Found {len(results)} results for {site} on page {page+1}")
+
+                # 随机延时，避免请求过快
+                time.sleep(random.uniform(2, 5))
+
+            except requests.exceptions.RequestException as e:
+                self.logger.error(f"Error fetching page {page + 1} for {site}: {str(e)}")
+                break # if a page cannot be fetched then break
+            except Exception as e:
+                 self.logger.error(f"Error processing page {page + 1} for {site}: {str(e)}")
+                 break # if there are any other exceptions when processing the results then break
+                 
+
+        return all_results
+    
+    def monitor_all_sites(self, time_ranges=None, advanced_queries=None):
         """
         监控所有网站
         :param time_ranges: 时间范围列表
+         :param advanced_queries: Dictionary of site to advanced_query, if a site has no entry, then the default search will be used
         :return: 包含所有结果的DataFrame
         """
         if time_ranges is None:
@@ -163,17 +212,15 @@ class DomainMonitor:
             return 
         for site in self.sites:
             for time_range in time_ranges:
-                results = self.monitor_site(site, time_range)
-                for result in results:
+                 advanced_query = advanced_queries.get(site) if advanced_queries else None
+                 results = self.monitor_site(site, time_range, advanced_query=advanced_query)  # re-use monitor_site
+                 for result in results:
                     result.update({
                         'site': site,
                         'time_range': time_range,
                         'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     })
-                all_results.extend(results)
-                
-                # 随机延时，避免请求过快
-                time.sleep(random.uniform(2, 5))
+                 all_results.extend(results)
         
         # 转换为DataFrame并保存
         if all_results:
@@ -194,9 +241,12 @@ def main():
       'apps.apple.com',
       'play.google.com'
     ]
-    
+    advanced_queries = {
+        'apps.apple.com': 'intitle:"new game" site:apps.apple.com',
+        'play.google.com': 'inurl:"new-game" site:play.google.com'
+    }
     # 开始监控
-    results_df = monitor.monitor_all_sites()
+    results_df = monitor.monitor_all_sites(advanced_queries=advanced_queries)
     
     # 输出统计信息
     if not results_df.empty:
