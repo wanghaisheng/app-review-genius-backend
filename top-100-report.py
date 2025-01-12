@@ -192,8 +192,11 @@ def fetch_data_from_d1(start_date=None, end_date=None):
     try:
         response = send_request_with_retries(url, headers, payload)
         result = response.json()
-        if result and result.get('result', []):
-            return result.get('result')
+        if result and result['result']:
+             first_result = result['result'][0]
+             if 'results' in first_result and first_result['results']:
+                data=first_result['results']
+                return data
         else:
             logging.warning("No data found for the given time range.")
             return []
