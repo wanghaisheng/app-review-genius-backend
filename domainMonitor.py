@@ -118,8 +118,8 @@ class DomainMonitor:
                     # 提取可能的游戏名称
                     game_name = self.extract_game_name(title)
                     
-                    if game_name:
-                        results.append({
+                    # if game_name:
+                    results.append({
                             'title': title,
                             'url': url,
                             'game_name': game_name
