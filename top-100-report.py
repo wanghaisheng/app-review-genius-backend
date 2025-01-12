@@ -753,6 +753,7 @@ if __name__ == "__main__":
     
     # Generate report for last week
     report_last_week = process_report(timeframe="last week")
+    print('report data',report_last_week)
     if report_last_week:
       logging.info(f"Report for last week generated")
     else:
