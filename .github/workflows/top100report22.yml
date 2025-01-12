@@ -29,7 +29,7 @@ jobs:
           echo "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}" >> $GITHUB_ENV
 
       - name: Run Python script
-        run: python your_script_name.py  # Replace with name of your script
+        run: python top-100-report.py  # Replace with name of your script
 
       - name: Upload reports as artifacts
         uses: actions/upload-artifact@v4
