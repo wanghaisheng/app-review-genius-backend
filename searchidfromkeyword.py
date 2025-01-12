@@ -3,8 +3,7 @@ import csv
 import httpx
 from bs4 import BeautifulSoup
 import time
-from urllib.parse import urljoin, urlparse
-
+from datetime import datetime, timedelta
 
 class AppIDFinder:
     def __init__(self, app_name, base_landing_url):
@@ -22,57 +21,83 @@ class AppIDFinder:
             print(f"HTTP Error: {e}")
             return None
 
-    def search_id_ingoogle(self, max_results=5000):
-            search_url = "https://www.google.com/search"
-            app_ids = []
-            
-            #Initial Request to get total results
-            params = {"q": f"app store {self.app_name}"}
-            response = self._get(search_url, params=params)
-            
-            if response is None:
-              print("Initial request to google failed.")
-              return None
-            
-            soup = BeautifulSoup(response.text, "html.parser")
+    def search_id_ingoogle(self, max_results=100, timeframe="all", custom_date=None):
+        search_url = "https://www.google.com/search"
+        app_ids = []
+        
+        params = {"q": f"app store {self.app_name}"}
 
-            result_stats_div = soup.find('div', id='result-stats')
-
-            if result_stats_div:
-                result_text = result_stats_div.text
-                # Extract total results number from the text like 'About 6,640,000 results'
-                match = re.search(r"About ([\d,]+) results", result_text)
-                if match:
-                    total_results = int(match.group(1).replace(",", ""))
-                    print(f"Total results: {total_results}")
-                    max_pages = min(max_results, total_results) // 10 # Google has 10 results per page, but max results 100
-
-                else:
-                    print("Could not find result count. using 1 page")
-                    max_pages = 1 # Could not find results
+        if timeframe == "last 24hr":
+           params["tbs"] = "qdr:d" # last 24 hours
+        elif timeframe == "last week":
+           params["tbs"] = "qdr:w" # last week
+        elif timeframe == "last month":
+           params["tbs"] = "qdr:m" # last month
+        elif timeframe == "last year":
+           params["tbs"] = "qdr:y" # last year
+        elif timeframe == "custom":
+            if custom_date:
+               params["tbs"] = f"cdr:1,cd_min:{custom_date}"
             else:
-               print("Could not find result count. using 1 page")
-               max_pages = 1 # Could not find results
+               print("No custom date set using default")
+        
+        # Initial request to get total results
+        response = self._get(search_url, params=params)
+            
+        if response is None:
+           print("Initial request to google failed.")
+           return None
 
-            for page in range(max_pages):
-               params = {"q": f"app store {self.app_name}", "start": str(page * 10)}
-               response = self._get(search_url, params=params)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-               if response is None:
-                  print(f"Failed to get results for page {page +1}. Skipping")
-                  continue
+        result_stats_div = soup.find('div', id='result-stats')
 
-               pattern = fr"{self._base_landing_url}/[a-z]{{2}}/.+?/id([0-9]+)"
-               matches = re.findall(pattern, response.text)
-               app_ids.extend(matches)
+        if result_stats_div:
+           result_text = result_stats_div.text
+           match = re.search(r"About ([\d,]+) results", result_text)
+           if match:
+              total_results = int(match.group(1).replace(",", ""))
+              print(f"Total results: {total_results}")
+              max_pages = min(max_results, total_results) // 10
+           else:
+              print("Could not find result count. using 1 page")
+              max_pages = 1
+        else:
+            print("Could not find result count. using 1 page")
+            max_pages = 1
 
-               time.sleep(1)
 
-            if not app_ids:
-                return None
+        for page in range(max_pages):
+            params = {"q": f"app store {self.app_name}", "start": str(page * 10)}
+            
+            if timeframe == "last 24hr":
+               params["tbs"] = "qdr:d"
+            elif timeframe == "last week":
+               params["tbs"] = "qdr:w"
+            elif timeframe == "last month":
+                params["tbs"] = "qdr:m"
+            elif timeframe == "last year":
+               params["tbs"] = "qdr:y"
+            elif timeframe == "custom":
+                if custom_date:
+                   params["tbs"] = f"cdr:1,cd_min:{custom_date}"
 
-            return app_ids
+            response = self._get(search_url, params=params)
+            if response is None:
+               print(f"Failed to get results for page {page +1}. Skipping")
+               continue
 
+            pattern = fr"{self._base_landing_url}/[a-z]{{2}}/.+?/id([0-9]+)"
+            matches = re.findall(pattern, response.text)
+            app_ids.extend(matches)
+
+            time.sleep(1)
+
+        if not app_ids:
+            return None
+
+        return app_ids
+    
     def search_id_insitemap(self, sitemap_url, csv_filename="sitemap_data.csv"):
         """Parses a sitemap, extracts app IDs, saves to CSV, and uploads to R2."""
 
@@ -109,13 +134,11 @@ class AppIDFinder:
             # self._upload_csv_to_r2(csv_filename)
             print(f"Successfully Uploaded csv to r2")
 
-
             return True
 
         except Exception as e:
            print(f"Error processing sitemap: {e}")
            return False
-
 
 
     def search_id_from_r2_mysql(self, app_name, table_name="app_data"):
@@ -139,14 +162,12 @@ class AppIDFinder:
         # Implement mysql query
         pass
 
-
     def close_client(self):
         if self._client:
             self._client.close()
 
     def __del__(self):
         self.close_client()
-
 if __name__ == '__main__':
     app_name = "Clash of Clans"
     base_landing_url = "https://apps.apple.com"
@@ -154,20 +175,33 @@ if __name__ == '__main__':
 
     finder = AppIDFinder(app_name, base_landing_url)
 
-    # Search Google for app ids
-    google_app_ids = finder.search_id_ingoogle()
-    if google_app_ids:
-       print(f"App ID found on Google: {google_app_ids}")
+    # Search Google for app ids with timeframe
+    app_ids = finder.search_id_ingoogle(timeframe="last week")
+    if app_ids:
+      print(f"App IDs from Google search (last week): {app_ids}")
     else:
-       print("No App ID found on Google")
+      print("No App IDs found for google search (last week)")
 
-    # search in sitemap
+    # Search Google for app ids with custom timeframe
+    app_ids = finder.search_id_ingoogle(timeframe="custom", custom_date="10/26/2023")
+    if app_ids:
+      print(f"App IDs from Google search (custom date): {app_ids}")
+    else:
+      print("No App IDs found for google search (custom date)")
+
+    # Search Google for app ids with default "all" timeframe
+    app_ids = finder.search_id_ingoogle()
+    if app_ids:
+        print(f"App IDs from Google search (all time): {app_ids}")
+    else:
+      print("No App IDs found for google search (all time)")
+    #search in sitemap
     sitemap_success = finder.search_id_insitemap(sitemap_url)
     if sitemap_success:
-        print("Sitemap parsing and CSV upload successful")
+      print("Sitemap parsing and CSV upload successful")
 
-        #search in database
-        app_id_from_db = finder.search_id_from_r2_mysql(app_name)
-        print(f"App ID from DB {app_id_from_db}")
+      #search in database
+      app_id_from_db = finder.search_id_from_r2_mysql(app_name)
+      print(f"App ID from DB {app_id_from_db}")
     else:
-        print("Sitemap parsing failed")
+      print("Sitemap parsing failed")
