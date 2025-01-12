@@ -207,8 +207,7 @@ async def upsert_app_data(session,item, max_retries=3, retry_delay=5):
 
             '{current_time}')
     ON CONFLICT (url) DO UPDATE
-    SET run_count = {run_count}, 
-        updateAt = '{current_time}',
+    SET updateAt = '{current_time}',
         google_indexAt = COALESCE(ios_new_apps.google_indexAt, EXCLUDED.google_indexAt),
         wayback_createAt = COALESCE(ios_new_apps.wayback_createAt, EXCLUDED.wayback_createAt),
         cc_createAt = COALESCE(ios_new_apps.cc_createAt, EXCLUDED.cc_createAt);
@@ -222,7 +221,7 @@ async def upsert_app_data(session,item, max_retries=3, retry_delay=5):
         try:
             async with session.post(url, headers=HEADERS, json=payload) as response:
                 response.raise_for_status()
-                print(f"[INFO] Data upserted for {url} with {run_count} runs.")
+                print(f"[INFO] Data upserted for {url}.")
                 return
         except aiohttp.ClientError as e:
             print(f"[ERROR] Attempt {attempt + 1} failed: {e}")
