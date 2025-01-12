@@ -100,10 +100,10 @@ def getinfo(url):
             if  tab.ele('.version-history'):
                 tab.ele('.version-history').click()
                 version = tab.ele('.we-modal__content__wrapper').texts()[-1]
-                if version
-                version_objects = parse_version_string(version)
-
-                version_json = json.dumps(version_objects)  # Convert to JSON string
+                if version:
+                    version_objects = parse_version_string(version)
+                    if version_objects:
+                        version_json = json.dumps(version_objects)  # Convert to JSON string
             # print('find version',version_json)
 
                 tab.ele('.we-modal__close').click()
