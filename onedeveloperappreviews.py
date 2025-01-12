@@ -172,7 +172,8 @@ def get_ids_from_developer_page(url):
             tab.get(url)
             print('detect apps')
             baseurl='https://apps.apple.com/'
-            links=tab.ele(f'@href^{baseurl}')
+            links=tab.ele('@href^https://apps.apple.com')
+            print('===',links)
             if links:
                 for i in links:
                     if '/app/' in i.link:
