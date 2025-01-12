@@ -41,107 +41,7 @@ def compute_hash(appid, username, date):
     hash_input = f"{appid}-{username}-{date}"
     return hashlib.sha256(hash_input.encode('utf-8')).hexdigest()
 
-# Retry mechanism for API requests
-def send_request_with_retries(url, headers, payload, retries=3, delay=2):
-    client = httpx.Client()
-    for attempt in range(retries):
-        try:
-            response = client.post(url, headers=headers, json=payload)
-            response.raise_for_status()  # Raise exception for bad response codes
-            return response
-        except httpx.HTTPError as e:
-            logging.error(f"Attempt {attempt + 1} failed: {e}")
-            if attempt < retries - 1:
-                logging.info(f"Retrying in {delay} seconds...")
-                time.sleep(delay)
-            else:
-                raise
-        finally:
-           client.close()
-
-# Create the table if it doesn't exist
-def create_table_if_not_exists():
-        """Create the review table if it does not exist."""
-        url = f"{CLOUDFLARE_BASE_URL}/query"
-        headers = {
-            "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
-            "Content-Type": "application/json"
-        }
-        create_query = """
-            CREATE TABLE IF NOT EXISTS ios_review_data (
-                id TEXT PRIMARY KEY,
-                appid TEXT,
-                appname TEXT,
-                country TEXT,
-                keyword TEXT,
-                score REAL,
-                userName TEXT,
-                date TEXT,
-                review TEXT
-            );
-        """
-        try:
-            with httpx.Client() as client:
-                response = client.post(url, headers=headers, json={"sql": create_query})
-                response.raise_for_status()
-                logging.info("Table created successfully.")
-        except httpx.RequestError as e:
-            logging.error(f"Failed to create table ios_review_data: {e}")
-
-
-def insert_into_ios_review_data(data, batch_size=50):
-    """Insert rows into the review table with hash checks and batch inserts."""
-    url = f"{CLOUDFLARE_BASE_URL}/query"
-    headers = {
-        "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-
-    create_table_if_not_exists()
-    
-    if not data:
-        logging.info("No data to insert.")
-        return
-
-    # Prepare and execute batch inserts
-    for i in range(0, len(data), batch_size):
-        batch = data[i:i + batch_size]
-        values_list = []
-
-        for row in batch:
-            hash_id = compute_hash(row['appid'], row['userName'], row['date'])
-            score = row['score'] if row['score'] else 0.0
-
-            # Use sqlite3's quote function to safely escape values
-            escaped_values = (
-                sqlite3.Connection('').execute("SELECT quote(?)", (hash_id,)).fetchone()[0],
-                sqlite3.Connection('').execute("SELECT quote(?)", (row['appid'],)).fetchone()[0],
-                sqlite3.Connection('').execute("SELECT quote(?)", (row['appname'],)).fetchone()[0],
-                sqlite3.Connection('').execute("SELECT quote(?)", (row['country'],)).fetchone()[0],
-                sqlite3.Connection('').execute("SELECT quote(?)", (row['keyword'],)).fetchone()[0],
-                score,
-                sqlite3.Connection('').execute("SELECT quote(?)", (row['userName'],)).fetchone()[0],
-                sqlite3.Connection('').execute("SELECT quote(?)", (row['date'],)).fetchone()[0],
-                sqlite3.Connection('').execute("SELECT quote(?)", (row['review'],)).fetchone()[0],
-            )
-
-            values_list.append(f"({', '.join(map(str, escaped_values))})")
-
-        values_str = ", ".join(values_list)
-        insert_query = (
-            "INSERT OR IGNORE INTO ios_review_data (id, appid, appname, country, keyword, score, userName, date, review) VALUES "
-            + values_str + ";"
-        )
-
-        try:
-            with httpx.Client() as client:
-                response = client.post(url, headers=headers, json={"sql": insert_query})
-                response.raise_for_status()
-                logging.info(f"Inserted batch {i // batch_size + 1} successfully.")
-        except httpx.RequestError as e:
-            logging.error(f"Failed to insert batch {i // batch_size + 1}: {e}")
-            if response:
-                logging.error(response.json())
+# Retry mechanism for API request
 
 def fetch_reviews_from_d1(start_date=None, end_date=None):
     """Fetches reviews from D1 based on the given time frame."""
@@ -797,11 +697,11 @@ if __name__ == "__main__":
     ]
     try:
          logging.info("Processing and inserting sample data...")
-         process_ios_top100_rank_data_and_insert(sample_data)
+         # process_ios_top100_rank_data_and_insert(sample_data)
          logging.info("Sample data processing complete.")
 
          logging.info("Processing and inserting sample review data...")
-         insert_into_ios_review_data(sample_review_data)
+         # insert_into_ios_review_data(sample_review_data)
          logging.info("Sample review data processing complete.")
 
     except Exception as e:
