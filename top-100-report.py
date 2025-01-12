@@ -561,7 +561,7 @@ def process_report(timeframe="all", custom_date=None):
     report['strategic_report'] = analyze_strategic_insights(data)
     report['feature_report'] = analyze_feature_inspiration(data)
     report['event_report'] = analyze_event_driven(data)
-    report['external_report'] = analyze_external_correlation(data, start_date, end_date)
+    # report['external_report'] = analyze_external_correlation(data, start_date, end_date)
     report = generate_report(report, timeframe, custom_date)
     return report
 
