@@ -208,7 +208,7 @@ async def get_review(id, outfile,developer):
         
             item={
                 "appid":app_id,
-                "keyword": keyword,
+                "keyword": developer,
                 "score": review['rating'],
                 "userName": review['userName'].strip(),
                             "date": reviewdate,
