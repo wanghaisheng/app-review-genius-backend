@@ -180,7 +180,7 @@ def get_ids_from_developer_page(url):
                 for i in links:
                     if '/app/' in i.link:
                         urls.append(i.link)
-            return urls
+            return list(set(urls))
         except Exception as e:
             print(f"Error fetching app URLs for {url}: {e}")
             return []
