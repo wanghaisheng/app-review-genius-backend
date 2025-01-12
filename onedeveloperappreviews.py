@@ -191,9 +191,9 @@ async def get_review(id, outfile,developer):
     Asynchronously fetch the review for the given app and save it to the outfile.
     """
     # https://apps.apple.com/us/app/bible/id282935706
-    url=id.replace('https://','')
-    appname=url.split('/')[3]
-    country=id.split('/')[1]
+    # url=id.replace('https://','')
+    url=id
+    appname, country = url.split('/')[-2], url.split('/')[-4]
     app_id=url.split('/')[-1]
     print('get review for url',id,appname,app_id,country)
     items=[]
