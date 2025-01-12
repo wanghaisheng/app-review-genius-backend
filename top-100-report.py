@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta
 import json
 import pandas as pd
+import sqlite3
 
 # Setup basic logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -23,13 +24,21 @@ CLOUDFLARE_BASE_URL = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLAR
 
 # Escape special characters for safe SQL insertion
 def escape_sql(value):
+    """
+    Safely escape a value by using SQLite's quote method, which handles special characters (e.g., single quotes).
+    """
     if isinstance(value, str):
-        return value.replace("'", "''")
+        # Use SQLite's quote method to escape the string
+        connection = sqlite3.connect(':memory:')  # In-memory SQLite database for escaping
+        quoted_value = connection.execute("SELECT quote(?)", (value,)).fetchone()[0]
+        connection.close()
+        return quoted_value
     return value
 
 # Compute a hash for a row to avoid duplicates
-def compute_row_hash(row):
-    hash_input = f"{row.get('cid', '')}{row.get('rank', '')}{row.get('updateAt', '')}"
+def compute_hash(appid, username, date):
+    """Compute a unique hash for each row."""
+    hash_input = f"{appid}-{username}-{date}"
     return hashlib.sha256(hash_input.encode('utf-8')).hexdigest()
 
 # Retry mechanism for API requests
@@ -52,90 +61,116 @@ def send_request_with_retries(url, headers, payload, retries=3, delay=2):
 
 # Create the table if it doesn't exist
 def create_table_if_not_exists():
-    create_table_sql = """
-    CREATE TABLE IF NOT EXISTS ios_top100_rank_data (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        platform TEXT,
-        type TEXT,
-        cid TEXT,
-        cname TEXT,
-        rank INTEGER,
-        appid TEXT,
-        appname TEXT,
-        icon TEXT,
-        link TEXT,
-        title TEXT,
-        updateAt TEXT,
-        country TEXT,
-        row_hash TEXT,
-        CONSTRAINT unique_row UNIQUE (row_hash)
-    );
-    """
-    query_payload = {"sql": create_table_sql}
+        """Create the review table if it does not exist."""
+        url = f"{CLOUDFLARE_BASE_URL}/query"
+        headers = {
+            "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        create_query = """
+            CREATE TABLE IF NOT EXISTS ios_review_data (
+                id TEXT PRIMARY KEY,
+                appid TEXT,
+                appname TEXT,
+                country TEXT,
+                keyword TEXT,
+                score REAL,
+                userName TEXT,
+                date TEXT,
+                review TEXT
+            );
+        """
+        try:
+            with httpx.Client() as client:
+                response = client.post(url, headers=headers, json={"sql": create_query})
+                response.raise_for_status()
+                logging.info("Table created successfully.")
+        except httpx.RequestError as e:
+            logging.error(f"Failed to create table ios_review_data: {e}")
+
+
+def insert_into_ios_review_data(data, batch_size=50):
+    """Insert rows into the review table with hash checks and batch inserts."""
     url = f"{CLOUDFLARE_BASE_URL}/query"
     headers = {
         "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
         "Content-Type": "application/json"
     }
-    try:
-        response = send_request_with_retries(url, headers, query_payload)
-        logging.info("Table ios_top100_rank_data checked/created successfully.")
-    except httpx.HTTPError as e:
-        logging.error(f"Failed to check/create table: {e}")
 
-# Insert data into the table in batches
-def insert_into_top100rank(data, batch_size=50):
     create_table_if_not_exists()
     
+    if not data:
+        logging.info("No data to insert.")
+        return
+
+    # Prepare and execute batch inserts
+    for i in range(0, len(data), batch_size):
+        batch = data[i:i + batch_size]
+        values_list = []
+
+        for row in batch:
+            hash_id = compute_hash(row['appid'], row['userName'], row['date'])
+            score = row['score'] if row['score'] else 0.0
+
+            # Use sqlite3's quote function to safely escape values
+            escaped_values = (
+                sqlite3.Connection('').execute("SELECT quote(?)", (hash_id,)).fetchone()[0],
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['appid'],)).fetchone()[0],
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['appname'],)).fetchone()[0],
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['country'],)).fetchone()[0],
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['keyword'],)).fetchone()[0],
+                score,
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['userName'],)).fetchone()[0],
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['date'],)).fetchone()[0],
+                sqlite3.Connection('').execute("SELECT quote(?)", (row['review'],)).fetchone()[0],
+            )
+
+            values_list.append(f"({', '.join(map(str, escaped_values))})")
+
+        values_str = ", ".join(values_list)
+        insert_query = (
+            "INSERT OR IGNORE INTO ios_review_data (id, appid, appname, country, keyword, score, userName, date, review) VALUES "
+            + values_str + ";"
+        )
+
+        try:
+            with httpx.Client() as client:
+                response = client.post(url, headers=headers, json={"sql": insert_query})
+                response.raise_for_status()
+                logging.info(f"Inserted batch {i // batch_size + 1} successfully.")
+        except httpx.RequestError as e:
+            logging.error(f"Failed to insert batch {i // batch_size + 1}: {e}")
+            if response:
+                logging.error(response.json())
+
+def fetch_reviews_from_d1(start_date=None, end_date=None):
+    """Fetches reviews from D1 based on the given time frame."""
+
+    sql_query = "SELECT * FROM ios_review_data"
+
+    if start_date and end_date:
+        sql_query += f" WHERE date >= '{start_date}' AND date <= '{end_date}'"
+    elif start_date:
+        sql_query += f" WHERE date >= '{start_date}'"
+
+    payload = {"sql": sql_query}
     url = f"{CLOUDFLARE_BASE_URL}/query"
     headers = {
         "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
         "Content-Type": "application/json"
     }
 
-    for i in range(0, len(data), batch_size):
-        batch = data[i:i + batch_size]
-
-        sql_query = "INSERT INTO ios_top100_rank_data (platform, type, cid, cname, rank, appid, appname, icon, link, title, updateAt, country, row_hash) VALUES "
-        values = []
-        for row in batch:
-            try:
-                row_values = (
-                  escape_sql(row.get('platform', '')),
-                  escape_sql(row.get('type', '')),
-                  escape_sql(row.get('cid', '')),
-                  escape_sql(row.get('cname', '')),
-                  row.get('rank', 0),
-                  escape_sql(row.get('appid', '')),
-                  escape_sql(row.get('appname', '')),
-                  escape_sql(row.get('icon', '')),
-                  escape_sql(row.get('link', '')),
-                  escape_sql(row.get('title', '')),
-                  escape_sql(row.get('updateAt', '')),
-                  escape_sql(row.get('country', '')),
-                  row.get('row_hash','')
-                )
-                values.append(f"('{row_values[0]}', '{row_values[1]}', '{row_values[2]}', '{row_values[3]}', {row_values[4]}, '{row_values[5]}', '{row_values[6]}', '{row_values[7]}', '{row_values[8]}', '{row_values[9]}', '{row_values[10]}', '{row_values[11]}', '{row_values[12]}')")
-            except Exception as e:
-                logging.error(f"Failed to process row:{row} Error:{e}")
-                continue
-        if values:
-           sql_query += ", ".join(values) + " ON CONFLICT (row_hash) DO NOTHING;"
-           payload = {"sql": sql_query}
-
-           try:
-                response = send_request_with_retries(url, headers, payload)
-                logging.info(f"Batch {i // batch_size + 1} inserted successfully: {response.json()}")
-           except httpx.HTTPError as e:
-                logging.error(f"Failed to insert batch {i // batch_size + 1}: {e}")
+    try:
+        response = send_request_with_retries(url, headers, payload)
+        result = response.json()
+        if result and result.get('result', []):
+            return result.get('result')
         else:
-            logging.info(f"Batch {i // batch_size + 1} has no valid data, skipping.")
-
-# Process and insert the data
-def process_ios_top100_rank_data_and_insert(data):
-    for row in data:
-        row['row_hash'] = compute_row_hash(row)
-    insert_into_top100rank(data)
+            logging.warning("No reviews found for the given time range.")
+            return []
+    except httpx.HTTPError as e:
+        logging.error(f"Failed to fetch reviews from D1: {e}")
+        return []
 
 def fetch_data_from_d1(start_date=None, end_date=None):
     """Fetches data from D1 based on the given time frame."""
@@ -274,7 +309,7 @@ def analyze_app_performance(data):
     df_rank_change_freq = df.copy()
     df_rank_change_freq['rank_change'] = df_rank_change_freq.groupby('appid')['rank'].diff().fillna(0)
     analysis['daily_rank_change_frequency'] = df_rank_change_freq.groupby('appid').agg(
-        daily_rank_change_frequency =  pd.NamedAgg(column = 'rank_change', aggfunc = lambda x: (x != 0).sum())
+        daily_rank_change_frequency =  pd.NamedAgg(column ='rank_change', aggfunc = lambda x: (x != 0).sum())
         ).to_dict('index')
 
     return analysis
@@ -521,13 +556,12 @@ def analyze_strategic_insights(data):
     df_app_retention['rank_group'] = pd.cut(df_app_retention['rank'], bins=[0, 10, 20, 50, 100], labels=['top_10', 'top_20', 'top_50', 'top_100'])
     app_retention = df_app_retention.groupby('type').agg(
         average_time_in_top_10 = pd.NamedAgg(column = 'rank_group', aggfunc = lambda x: (x == "top_10").sum()),
-         average_time_in_top_20 = pd.NamedAgg(column = 'rank_group', aggfunc = lambda x: (x == ""top_20").sum()),
+         average_time_in_top_20 = pd.NamedAgg(column = 'rank_group', aggfunc = lambda x: (x == "top_20").sum()),
          average_time_in_top_50 = pd.NamedAgg(column = 'rank_group', aggfunc = lambda x: (x == "top_50").sum()),
          average_time_in_top_100 = pd.NamedAgg(column = 'rank_group', aggfunc = lambda x: (x == "top_100").sum())
         ).to_dict('index')
     analysis['app_retention'] = app_retention
     return analysis
-
 
 def analyze_feature_inspiration(data):
    """Analyzes features for inspiration from top apps."""
@@ -553,17 +587,26 @@ def analyze_event_driven(data):
     analysis['seasonal_impact'] = "Placeholder, requires external seasonal event data"
     return analysis
 
-def analyze_external_correlation(data):
-     """Analyzes app performance against external data"""
-     if not data:
-         logging.warning("No data available to analyze correlation with external factor")
-         return {}
-      # Place holder, requires external data, skipped
-     analysis = {}
-     analysis['rating_reviews'] = "Placeholder, requires app rating data"
-     analysis['app_size'] = "Placeholder, requires app size data"
-     analysis['external_factors'] = "Placeholder, requires external trend analysis"
-     return analysis
+def analyze_external_correlation(data, start_date=None, end_date=None):
+    """Analyzes app performance against external data"""
+    if not data:
+        logging.warning("No data available to analyze correlation with external factor")
+        return {}
+
+     # Placeholder for external data analysis
+    analysis = {}
+    reviews = fetch_reviews_from_d1(start_date, end_date)
+    if reviews:
+        df_reviews = pd.DataFrame(reviews)
+         # Perform sentiment analysis, correlation with score, etc
+        analysis['rating_reviews'] =  df_reviews.groupby('appid').agg(average_score = pd.NamedAgg(column='score', aggfunc='mean')).to_dict('index')
+    else:
+        analysis['rating_reviews'] = "No review data found"
+
+    analysis['app_size'] = "Placeholder, requires app size data"
+    analysis['external_factors'] = "Placeholder, requires external trend analysis"
+    return analysis
+
 
 def generate_report(analysis, timeframe="all", custom_date=None):
     """Generates a report based on the analysis."""
@@ -585,6 +628,8 @@ def process_report(timeframe="all", custom_date=None):
 
     if not data:
         return None
+    
+    review_data = fetch_reviews_from_d1(start_date, end_date)
 
     report = {}
     report['app_performance_report'] = analyze_app_performance(data)
@@ -594,7 +639,7 @@ def process_report(timeframe="all", custom_date=None):
     report['strategic_report'] = analyze_strategic_insights(data)
     report['feature_report'] = analyze_feature_inspiration(data)
     report['event_report'] = analyze_event_driven(data)
-    report['external_report'] = analyze_external_correlation(data)
+    report['external_report'] = analyze_external_correlation(data, start_date, end_date)
     report = generate_report(report, timeframe, custom_date)
     return report
 
@@ -656,7 +701,7 @@ if __name__ == "__main__":
             "link": "https://example.com/4",
             "title": "Top App",
             "updateAt": datetime.utcnow().isoformat(),
-            "country": "CA"
+             "country": "CA"
         },
         {
             "platform": "iOS",
@@ -684,7 +729,7 @@ if __name__ == "__main__":
           "link": "https://example.com/6",
           "title": "Top App",
           "updateAt": (datetime.utcnow() - timedelta(days=1)).isoformat(),
-           "country": "US"
+          "country": "US"
           }
          ,
         {
@@ -713,16 +758,52 @@ if __name__ == "__main__":
             "link": "https://example.com/8",
             "title": "Top App",
             "updateAt":  (datetime.utcnow() - timedelta(days=1)).isoformat(),
-             "country": "CA"
+              "country": "CA"
         }
 
         # Add more rows as needed
     ]
-
+    sample_review_data = [
+      {
+            "appid": "com.example.app1",
+             "appname": "Example App 1",
+            "country": "US",
+            "keyword": "great app",
+            "score": 4.5,
+            "userName": "user1",
+            "date": datetime.utcnow().isoformat(),
+           "review": "this is a great app",
+      },
+       {
+             "appid": "com.example.app2",
+             "appname": "Example App 2",
+            "country": "US",
+            "keyword": "bad app",
+            "score": 1.5,
+            "userName": "user2",
+             "date": datetime.utcnow().isoformat(),
+           "review": "this is a bad app",
+      },
+      {
+           "appid": "com.example.app2",
+           "appname": "Example App 2",
+            "country": "US",
+            "keyword": "ok app",
+            "score": 3,
+            "userName": "user3",
+            "date": datetime.utcnow().isoformat(),
+           "review": "this is a ok app",
+      }
+    ]
     try:
          logging.info("Processing and inserting sample data...")
          process_ios_top100_rank_data_and_insert(sample_data)
          logging.info("Sample data processing complete.")
+
+         logging.info("Processing and inserting sample review data...")
+         insert_into_ios_review_data(sample_review_data)
+         logging.info("Sample review data processing complete.")
+
     except Exception as e:
          logging.error(f"An unexpected error occurred during data insertion: {e}")
     
