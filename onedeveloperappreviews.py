@@ -196,6 +196,8 @@ async def get_review(id, outfile,developer):
     country=id.split('/')[1]
     app_id=url.split('/')[-1]
     print('get review for url',id,appname,app_id,country)
+    items=[]
+    
     try:
     
         app = AppStore(country=country, app_name=appname)
@@ -215,6 +217,7 @@ async def get_review(id, outfile,developer):
             "country":country,
             "developer":developer
         }
+            items.append(item)
 
     except Exception as e:
         print(f"Error fetching reviews for URL '{url}': {e}")
