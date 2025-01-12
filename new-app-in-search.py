@@ -362,7 +362,7 @@ async def main():
                     if not url in appurls:
                         existing_apps.append(item)
                         new_apps.append(url)
-            print('clean google search url item',cleanitems)
+            print('clean google search url item',new_apps)
             
             
             # await asyncio.gather(*(process_new_app(semaphore, session, item) for item in new_apps))
