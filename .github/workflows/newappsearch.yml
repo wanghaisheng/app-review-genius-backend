@@ -21,8 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install httpx google-play-scraper aiohttp aiohttp_socks bs4 DataRecorder pandas DrissionPage python-dotenv app_store_scraper requests tqdm
-          waybackpy cdx_toolkit lxml
+          pip install httpx google-play-scraper aiohttp aiohttp_socks bs4 DataRecorder pandas DrissionPage python-dotenv app_store_scraper requests tqdm waybackpy cdx_toolkit lxml
       - name: Run scraper and save results
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
