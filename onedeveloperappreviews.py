@@ -173,7 +173,7 @@ def get_ids_from_developer_page(url):
             print('detect apps')
             links=tab.ele(f'@href^{baseurl}')
             if links:
-                for i in links
+                for i in links:
                     urls.append(i.link)
             return urls
         except Exception as e:
