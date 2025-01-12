@@ -186,8 +186,69 @@ async def get_app_date(session, item, max_retries=3, retry_delay=5):
             # print('t failed:', e)
     item['wayback_createAt']=wayback_createAt
     item['cc_createAt']=cc_createAt
+async def upsert_app_data(session, item, max_retries=3, retry_delay=5):
+    current_time = datetime.utcnow().isoformat()
 
-async def upsert_app_data(session,item, max_retries=3, retry_delay=5):
+    url=item.get('url')
+    google_indexAt=item.get('google_indexAt',None)
+    wayback_createAt=item.get('wayback_createAt',None)
+    cc_createAt=item.get('cc_createAt',None)
+    sitemap_createAt=item.get('sitemap_createAt',None)
+
+    sql = f"""
+    INSERT INTO ios_new_apps (url, google_indexAt, wayback_createAt, cc_createAt, sitemap_createAt, updateAt)
+    VALUES ('{url}',
+            {f"'{google_indexAt}'" if google_indexAt else 'NULL'},
+            {f"'{wayback_createAt}'" if wayback_createAt else 'NULL'},
+            {f"'{cc_createAt}'" if cc_createAt else 'NULL'},
+            {f"'{sitemap_createAt}'" if sitemap_createAt else 'NULL'},
+            '{current_time}')
+    ON CONFLICT (url) DO UPDATE
+    SET
+        -- update the updateAt time to current
+        updateAt = '{current_time}',
+        -- If a new google_indexAt is available use that else keep existing value
+        google_indexAt = COALESCE(ios_new_apps.google_indexAt, EXCLUDED.google_indexAt),
+        -- If a new wayback_createAt is available use that else keep existing value
+        wayback_createAt = COALESCE(ios_new_apps.wayback_createAt, EXCLUDED.wayback_createAt),
+        -- If a new cc_createAt is available use that else keep existing value
+        cc_createAt = COALESCE(ios_new_apps.cc_createAt, EXCLUDED.cc_createAt),
+        -- If a new sitemap_createAt is available use that else keep existing value
+         sitemap_createAt = COALESCE(ios_new_apps.sitemap_createAt, EXCLUDED.sitemap_createAt);
+    """
+
+    payload = {"sql": sql}
+    query_url = f"{CLOUDFLARE_BASE_URL}/query"
+
+    print(f"[DEBUG] SQL query: {sql}")  # Log the SQL query
+    print(f"[DEBUG] Payload: {payload}")  # Log the payload
+
+
+    for attempt in range(max_retries):
+        try:
+            async with session.post(query_url, headers=HEADERS, json=payload) as response:
+                response.raise_for_status()
+                print(f"[INFO] Data upserted for {url}.")
+                return
+        except aiohttp.ClientError as e:
+            print(f"[ERROR] Attempt {attempt + 1} failed: {e!r}")
+            if attempt < max_retries - 1:
+                 try:
+                     response_body = await response.json()
+                     print(f"[ERROR] Response body: {response_body}")
+                 except:
+                     pass
+                 print(f"[INFO] Retrying in {retry_delay} seconds...")
+
+                 await asyncio.sleep(retry_delay)
+
+        except Exception as e:
+            print(f"[ERROR] Unexpected error on attempt {attempt + 1}: {e!r}")
+            if attempt < max_retries - 1:
+                print(f"[INFO] Retrying in {retry_delay} seconds...")
+                await asyncio.sleep(retry_delay)
+    print(f"[ERROR] Failed to upsert data for {url} after {max_retries} attempts.")
+async def upsert_app_data1(session,item, max_retries=3, retry_delay=5):
     current_time = datetime.utcnow().isoformat()
 
     url=item.get('url')
