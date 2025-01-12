@@ -195,7 +195,7 @@ async def get_review(id, outfile,developer):
     appname=url.split('/')[3]
     country=id.split('/')[1]
     app_id=url.split('/')[-1]
-    print('get review for url',id)
+    print('get review for url',id,appname,app_id,country)
     try:
     
         app = AppStore(country=country, app_name=appname)
