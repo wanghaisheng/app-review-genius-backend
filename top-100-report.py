@@ -531,20 +531,32 @@ def analyze_external_correlation(data, start_date=None, end_date=None):
     return analysis
 
 
+def default_serializer(obj):
+  if isinstance(obj, datetime):
+     return obj.isoformat() # Use ISO format for dates
+
+  if isinstance(obj, timedelta):
+        return str(obj) # Convert to string representation for timedeltas
+
+  if isinstance(obj, pd.Series): #convert pandas Series to list
+        return obj.tolist()
+
+  if isinstance(obj, pd.Timestamp):
+     return str(obj)
+  return obj
+
 def generate_report(analysis, timeframe="all", custom_date=None):
     """Generates a report based on the analysis."""
     report = {
-      "report_type": "top100rank",
-      "timeframe": timeframe,
-      "custom_range": custom_date,
-      "analysis": analysis
+    "report_type": "top100rank",
+    "timeframe": timeframe,
+    "custom_range": custom_date,
+    "analysis": analysis
     }
-    print('report json',report)
-    report_json = json.dumps(report, indent=4)
-    logging.info(f"Report:\n{report_json}")
 
+    report_json = json.dumps(report, indent=4, default=default_serializer)
+    logging.info(f"Report:\n{report_json}")
     return report_json
-import json
 
 def write_json_to_file(data, filename):
     """
