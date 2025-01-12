@@ -353,6 +353,8 @@ async def main():
                     appname=url.replace(baseUrl,'').split('/')
                     if len(appname)<3:
                         continue
+                    if '/developer/' in url:
+                        continue
                     url=baseUrl+appname[0]+'/'+appname[1]+'/'+appname[2]
                     if url in appurls:
                         continue
@@ -360,13 +362,14 @@ async def main():
 
                     item['google_indexAt']=gindex
                     if not url in appurls:
+                        print('check url is existing')
                         existing_apps.append(item)
                         new_apps.append(url)
             print('clean google search url item',new_apps)
             
             
             # await asyncio.gather(*(process_new_app(semaphore, session, item) for item in new_apps))
-    
+        new_apps=new_apps[:100]
         print("[INFO] url detect complete.")
         print("[INFO] update popular space count.")
         bulk_scrape_and_save_app_urls(new_apps)
