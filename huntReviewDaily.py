@@ -271,6 +271,7 @@ async def main():
                     ids = getids_from_keyword(keyword, country)
                     totalurls.extend(ids)
         totalurls=list(set(totalurls))
+        print('found urls from keyword',len(totalurls),totalurls)
                     
         if not totalurls:
             print(f"No apps found for keyword '{keyword}'")
@@ -283,13 +284,14 @@ async def main():
                     cleanurls.append(url.strip() )
         if not cleanurls:
             print(f"No apps found for urls '{urls}'")
-        
+        print('found urls in input',cleanurls)
         totalurls=totalurls.extend(cleanurls)
+        print(f'found  all app urls from keyword and input:{totalurls}')
+        
         if not totalurls:
             print(f"No apps found for your input '{keyword} {urls}'")
             return
          
-        print(f'found app urls:{totalurls}')
         bulk_scrape_and_save_app_urls(totalurls)
         outfile_reviews_path = f'{RESULT_FOLDER}/{keyword}-app-reviews-{current_time}.csv'
         outfile_reviews = Recorder(outfile_reviews_path)
