@@ -1,0 +1,27 @@
+{
+  "name": "app-review-genius",
+  "version": "1.0.0",
+  "description": "A tool for scraping app reviews from the Apple App Store.",
+  "main": "extendapp.js",
+  "scripts": {
+    "start": "node extendapp.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "app",
+    "review",
+    "scraper",
+    "apple",
+    "app-store",
+    "cloudflare",
+    "d1"
+  ],
+  "author": "Your Name",
+  "license": "ISC",
+  "dependencies": {
+    "app-store-scraper": "^0.18.0",
+    "node-fetch": "^3.3.2",
+    "papaparse": "^5.4.1"
+
+  }
+}
