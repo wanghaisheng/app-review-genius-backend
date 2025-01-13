@@ -285,7 +285,7 @@ async def main():
         if not cleanurls:
             print(f"No apps found for urls '{urls}'")
         print('found urls in input',cleanurls)
-        totalurls=totalurls.extend(cleanurls)
+        totalurls.extend(cleanurls)
         print(f'found  all app urls from keyword and input:{totalurls}')
         
         if not totalurls:
