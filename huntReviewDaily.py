@@ -180,13 +180,14 @@ async def get_review(url, outfile, keyword):
     """
     items=[]
     
-    try:
-        appname, country = url.split('/')[-2], url.split('/')[-4]
-        app_id=url.split('/')[-1]
+    appname, country = url.split('/')[-2], url.split('/')[-4]
+    app_id=url.split('/')[-1]
         
-        print('processing',appname,country,url)
-        all_reviews = []
-        how_many=None
+    print('processing',appname,country,url)
+    all_reviews = []
+    how_many=None
+    try:
+    
         app = AppStore(country=country, app_name=appname)
         if how_many:
             await asyncio.to_thread(app.review,
@@ -196,17 +197,19 @@ async def get_review(url, outfile, keyword):
         else:
              await asyncio.to_thread(app.review,
                                 sleep=random.randint(1, 2))
-
-
         all_reviews=app.reviews
-        print('manual get review')
-        if len(all_reviews)==0 or all_reviews is None:
+    except Exception as e:
+        print(f"Error lib fetching reviews for URL '{url}': {e}")
+
+    print('manual get review',len(all_reviews))
+    if len(all_reviews)==0 or all_reviews is None:
+        try:
             user_agents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
     ]
 
-            token = get_token(country, app_name, app_id, user_agents)
+            token = get_token(country, appname, app_id, user_agents)
             
             offset = '1'
             MAX_REVIEWS = 100000+21
@@ -218,13 +221,15 @@ async def get_review(url, outfile, keyword):
                                                        token=token, 
                                                        offset=offset)
                 all_reviews.extend(reviews)
-
+        except Exception as e:
+            print(f"Error manual fetching reviews for URL '{url}': {e}")
+    
         print('get aall review')
 
-        for review in all_reviews:
-            reviewdate = review['date'].strftime('%Y-%m-%d-%H-%M-%S')
+    for review in all_reviews:
+        reviewdate = review['date'].strftime('%Y-%m-%d-%H-%M-%S')
 
-            item={
+        item={
                 "appid":app_id,
                 "appname": appname,
                 "country": country,
@@ -234,11 +239,9 @@ async def get_review(url, outfile, keyword):
                 "date": reviewdate,
                 "review": review['review'].replace('\r', ' ').replace('\n', ' ').strip()
             }
-            items.append(item)
-            outfile.add_data(item)
+        items.append(item)
+        outfile.add_data(item)
             
-    except Exception as e:
-        print(f"Error fetching reviews for URL '{url}': {e}")
             
     try:
         insert_into_ios_review_data(items)
