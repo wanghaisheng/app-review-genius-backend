@@ -8,16 +8,10 @@ on:
         type: string
         required: False
         default: 'us'
-      keyword:
-        description: 'keyword bible'
-        type: string
-        required: False
-        default: 'bible'        
       urls:
-        description: 'app urls list, use comma as separator'
         type: string
         required: False
-        default: "https://apps.apple.com/app/we-are-warriors/id6466648550"
+        default: "apps.apple.com,play.google.com"
       action:
         description: 'Choose action: "commit" to commit to repo, "upload" to upload to release'
         type: string
@@ -43,9 +37,7 @@ jobs:
       - name: Run the scraping script
         run: python huntReviewDaily.py
         env:
-          country: ${{ github.event.inputs.country }}          
-          keyword: ${{ github.event.inputs.keyword }}          
-          urls: ${{ github.event.inputs.urls }}          
+          expression: ${{ github.event.inputs.country }}          
 
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
