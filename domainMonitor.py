@@ -17,7 +17,7 @@ class DomainMonitor:
         初始化监控器
         :param sites_file: 包含游戏网站列表的文本文件
         """
-        self.sites = self._load_sites(sites_file)
+        self.sites = self._load_sites()
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
@@ -38,9 +38,17 @@ class DomainMonitor:
     def _load_sites(self, filename):
         """加载网站列表"""
         try:
-            with open(filename, 'r', encoding='utf-8') as f:
-                return [line.strip() for line in f if line.strip()]
+            if os.getenv('sites') is None or os.getenv('sites')=='':
                 
+                with open(filename, 'r', encoding='utf-8') as f:
+                sites= [line.strip() for line in f if line.strip()]
+            else:
+                sites=os.getenv('sites')
+                if ',' in sites:
+                    sites=sites.split(',')
+                else:
+                    sites=[sites]
+            return sites
         except FileNotFoundError:
             print(f"Sites file {filename} not found!")
             return []
@@ -210,7 +218,7 @@ class DomainMonitor:
         all_results = []
         if len(self.sites)==0:
             print('please provide sites')
-            return 
+            # return 
         for site in self.sites:
             for time_range in time_ranges:
                  advanced_query = advanced_queries.get(site) if advanced_queries else None
