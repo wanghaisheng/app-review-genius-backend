@@ -258,30 +258,38 @@ async def main():
         keyword = os.getenv('keyword', 'bible')
         country = os.getenv('country', 'us')
         urls = os.getenv('urls', 'us')
+        if ',' in urls:
+            urls=urls.slit(',')
+        else:
+            urls=[urls.strip()]
 
         current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        totalurls=[]
         if keyword and us:
-          ids = getids_from_keyword(keyword, country)
-          ids=list(set(ids))
-        # ids=ids[:1]
+            if ',' in keyword:
+                for k in keyword.split(','):
+                    ids = getids_from_keyword(keyword, country)
+                    totalurls.extend(ids)
+        totalurls=list(set(totalurls))
+                    
         if not ids:
             print(f"No apps found for keyword '{keyword}'")
-        cleanurls=[url if '/app/' in url  and len(url.split('apps.apple.com/')[-1].split('/'))==3 for url in urls]
+        cleanurls=[url.strip() if '/app/' in url  and len(url.split('apps.apple.com/')[-1].split('/'))==3 for url in urls]
         if not cleanurls:
             print(f"No apps found for urls '{urls}'")
         
-        ids=ids.extend(cleanurls)
-        if not ids:
+        totalurls=totalurls.extend(cleanurls)
+        if not totalurls:
             print(f"No apps found for your input '{keyword} {urls}'")
             return
          
-        print(f'found ids:{ids}')
-        bulk_scrape_and_save_app_urls(ids)
+        print(f'found app urls:{totalurls}')
+        bulk_scrape_and_save_app_urls(totalurls)
         outfile_reviews_path = f'{RESULT_FOLDER}/{keyword}-app-reviews-{current_time}.csv'
         outfile_reviews = Recorder(outfile_reviews_path)
         if downloadreview:
-            tasks = [get_review(url, outfile_reviews, keyword) for url in ids]
-            batch_size = 1
+            tasks = [get_review(url, outfile_reviews, keyword) for url in totalurls]
+            batch_size = 3
             for i in range(0, len(tasks), batch_size):
                 await asyncio.gather(*tasks[i:i + batch_size])
 
