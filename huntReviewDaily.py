@@ -274,7 +274,7 @@ async def main():
                     
         if not ids:
             print(f"No apps found for keyword '{keyword}'")
-        cleanurls=[url.strip() if '/app/' in url  and len(url.split('apps.apple.com/')[-1].split('/'))==3 for url in urls]
+        cleanurls = [url.strip() if '/app/' in url and len(url.split('apps.apple.com/')[-1].split('/'))==3 for url in urls]
         if not cleanurls:
             print(f"No apps found for urls '{urls}'")
         
