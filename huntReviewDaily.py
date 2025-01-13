@@ -265,7 +265,7 @@ async def main():
 
         current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         totalurls=[]
-        if keyword and us:
+        if keyword and country:
             if ',' in keyword:
                 for k in keyword.split(','):
                     ids = getids_from_keyword(keyword, country)
