@@ -241,6 +241,7 @@ def main():
     expression=os.getenv('expression','intitle:"sprunki"')
     if expression =='':
         return
+    expression=expression.strip()
     sites=[
       'apps.apple.com',
       'play.google.com'
