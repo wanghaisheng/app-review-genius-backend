@@ -1,0 +1,60 @@
+name: tt
+
+on:
+  workflow_dispatch:
+    inputs:
+      country:
+        description: 'us or cn'
+        type: string
+        required: false
+        default: 'us'
+      keyword:
+        description: 'keyword bible'
+        type: string
+        required: false
+        default: 'bible'
+      urls:
+        description: 'app urls list, use comma as separator'
+        type: string
+        required: false
+        default: "https://apps.apple.com/app/we-are-warriors/id6466648550"
+      action:
+        description: 'Choose action: "commit" to commit to repo, "upload" to upload to release'
+        type: string
+        required: false
+        default: 'upload'
+
+jobs:
+  scrape_and_email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this repo
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # or your preferred Node.js version
+
+      - name: Install dependencies
+        run: |
+          npm install axios cheerio puppeteer node-fetch @cloudflare/d1 papaparse
+          npm install app-store-scraper
+
+      - name: Run the scraping script
+        run: node t.js
+        env:
+          COUNTRY: ${{ github.event.inputs.country }}
+          KEYWORD: ${{ github.event.inputs.keyword }}
+          URLS: ${{ github.event.inputs.urls }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.D1_APP_DATABASE_ID }}
+          RESULT_FOLDER: ./result  # Adjust if necessary
+          OUTPUT_FOLDER: ./output
+
+      - name: upload files
+        uses: actions/upload-artifact@v4
+        with:
+            name: healthapps-${{ env.KEYWORD }}
+            path: ./result/ # or path/to/artifact
