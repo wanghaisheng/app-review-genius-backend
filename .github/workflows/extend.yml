@@ -42,7 +42,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install app-store-scraper node-fetch @cloudflare/d1 papaparse
+        run: npm install
 
       - name: Run the scraping script
         run: node extendapp.js
