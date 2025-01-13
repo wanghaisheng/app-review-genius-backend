@@ -179,7 +179,7 @@ async def get_review(url, outfile, keyword):
     Asynchronously fetch reviews for the given app and save them.
     """
     items=[]
-    
+    url=url.split('://')[-1]
     appname, country = url.split('/')[-2], url.split('/')[-4]
     app_id=url.split('/')[-1]
         
@@ -289,7 +289,7 @@ async def main():
             print(f"No apps found for urls '{urls}'")
         print('found urls in input',cleanurls)
         totalurls.extend(cleanurls)
-        totalurls=[url.replace('https://','') for url in totalurls]
+        # totalurls=[url.replace('https://','') for url in totalurls]
         print(f'found  all app urls from keyword and input:{totalurls}')
         
         if not totalurls:
