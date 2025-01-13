@@ -233,6 +233,7 @@ async def get_review(url, outfile, keyword):
                 "review": review['review'].replace('\r', ' ').replace('\n', ' ').strip()
             }
             items.append(item)
+            outfile_reviews.add_data(item)
     except Exception as e:
         print(f"Error fetching reviews for URL '{url}': {e}")
             
