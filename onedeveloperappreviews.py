@@ -226,6 +226,7 @@ async def get_review(id, outfile,developer):
             "developer":developer
         }
             items.append(item)
+            outfile.add_data(item)
 
     except Exception as e:
         print(f"Error fetching reviews for URL '{url}': {e}")
