@@ -278,6 +278,7 @@ async def main():
 
         for url in urls:
             if '/app/' in url:
+                print('check url', len(url.split('apps.apple.com/')[-1].split('/')))
                 if len(url.split('apps.apple.com/')[-1].split('/'))==3:
                     cleanurls.append(url.strip() )
         if not cleanurls:
