@@ -84,6 +84,8 @@ Categorization: Leverages GPT-4 to categorize reviews into various feedback type
 
 # reference
 
+https://github.com/futurice/app-store-web-scraper
+
 https://github.com/glennfang/apple-app-reviews-scraper
 
 
