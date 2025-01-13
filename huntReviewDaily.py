@@ -272,7 +272,7 @@ async def main():
                     totalurls.extend(ids)
         totalurls=list(set(totalurls))
                     
-        if not ids:
+        if not totalurls:
             print(f"No apps found for keyword '{keyword}'")
         cleanurls = []
 
