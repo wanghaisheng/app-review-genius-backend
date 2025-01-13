@@ -84,9 +84,12 @@ Categorization: Leverages GPT-4 to categorize reviews into various feedback type
 
 # reference
 
-https://github.com/futurice/app-store-web-scraper
+https://github.com/facundoolano/app-store-scraper?tab=readme-ov-file#readme
 
-https://github.com/glennfang/apple-app-reviews-scraper
+
+https://github.com/futurice/app-store-web-scraper  max 500 per id
+
+https://github.com/glennfang/apple-app-reviews-scraper 
 
 
 https://github.com/Kiddie-1410/tiktok_review_playstore/blob/main/en_review.ipynb
