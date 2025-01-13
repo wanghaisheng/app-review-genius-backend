@@ -7,7 +7,7 @@ on:
         description: 'intext:"image to video"'
         type: string
         required: False
-        default: 'us'
+        default: 'intext:"image to video"'
       sites:
         type: string
         required: False
