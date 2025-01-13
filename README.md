@@ -6,24 +6,55 @@
 
 # how to build  app review dataset in 5 minutes without coding 
 
+## hunt all apps
 
-## from keyword to apps
+### use waybackmachines as a source for historical 
+
+### use google search for continous app 
+
+### use sitemaps for continous app 
+
+
+### continous search daily apps in google
+if app is a new or newly update ,it will show in the google last 24hour serp list 
+
+###
+
+## hunt reviews
+
+for historical reviews, if app has over 100000 reviews, we may not collect them all, but without limit set, we will try to collect as much as we can, it takes 2s sleep to collect 20 review, for one app, take 10-20 minutes for historical collection.
+
+for continious collection we set limit to 2000, it takes 5 minutes.we can set frequecny to daily hourly weekly.
+
+
+
+### from keyword to apps
 
 use keyword to search app ids and scrape all app reviews
+#### search in app store direct
 
-## from developer to apps
+#### search in google 
+
+
+#### search in apps.apple.com/sitemap.xml
+
+
+### from developer to apps
+
+typically we found a top app ,then click developer, try to find out whether this develop always create a popular app
 
 use developer profile link to detect app ids and scrape all app reviews
 
 
-## from category to top 100 apps
+### from category to top 100 apps
 
+ios app store contain apps for iphone ,ipad, both have differ category list.
+we can track top 100 rank app within each category
 
 run this daily to track top 100 ios app under health category
 >get-top100-app-daily.py
 
 
-https://github.com/glennfang/apple-app-reviews-scraper
 
 
 
@@ -32,6 +63,10 @@ https://github.com/glennfang/apple-app-reviews-scraper
 
 Categorization: Leverages GPT-4 to categorize reviews into various feedback types (e.g., feature requests, UI issues).--> not included in the live demo
 
+
+# reference
+
+https://github.com/glennfang/apple-app-reviews-scraper
 
 
 https://github.com/Kiddie-1410/tiktok_review_playstore/blob/main/en_review.ipynb
