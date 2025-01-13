@@ -17,7 +17,7 @@ on:
         description: 'app urls list, use comma as separator'
         type: string
         required: False
-        default: "https://apps.apple.com//app/we-are-warriors/id6466648550"
+        default: "https://apps.apple.com/app/we-are-warriors/id6466648550"
       action:
         description: 'Choose action: "commit" to commit to repo, "upload" to upload to release'
         type: string
