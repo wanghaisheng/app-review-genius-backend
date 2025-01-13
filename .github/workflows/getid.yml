@@ -35,7 +35,7 @@ jobs:
 
         
       - name: Run the scraping script
-        run: python huntReviewDaily.py
+        run: python domainMonitor.py
         env:
           expression: ${{ github.event.inputs.country }}          
 
