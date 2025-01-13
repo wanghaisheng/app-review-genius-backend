@@ -1,5 +1,4 @@
 const store = require('app-store-scraper');
-const { D1Database } = require('@cloudflare/d1');
 const fetch = require('node-fetch');
 const { parse } = require('papaparse')
 const fs = require('node:fs/promises');
@@ -17,56 +16,57 @@ const KEYWORD = process.env.KEYWORD || 'bible';
 const URLS = process.env.URLS || '';
 const SAVE_LOCATION = process.env.SAVE_LOCATION || 'local'; // Default to local
 
-async function insertIntoD1(data, tableName) {
+async function insertIntoD1(sqlQuery) {
     const url = `${CLOUDFLARE_BASE_URL}/query`;
     const headers = {
-      Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
-      'Content-Type': 'application/json',
+        Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
+        'Content-Type': 'application/json',
     };
-    let sqlQuery;
-
-    if(tableName==='ios_app_data'){
-         sqlQuery = `INSERT INTO ios_app_data (platform, type, cid, cname, rank, appid, appname, icon, link, title, updateAt, country, alsoBought) VALUES ${data
-            .map(
-              (row) =>
-                `('${row.platform}', '${row.type}', '${row.cid}', '${row.cname}', ${row.rank}, '${row.appid}', '${row.appname}', '${row.icon}', '${row.link}', '${row.title}', '${row.updateAt}', '${row.country}', '${row.alsoBought ? row.alsoBought.join(',') : null}')`
-            )
-            .join(', ')};`;
-
-    } else if(tableName==='ios_review_data'){
-       sqlQuery = `INSERT INTO ios_review_data (appid, appname, country, keyword, score, userName, date, review) VALUES ${data.map(
-          (row) =>
-            `('${row.appid}', '${row.appname}', '${row.country}', '${row.keyword}', ${row.score}, '${row.userName}', '${row.date}', '${row.review}')`
-        ).join(',')};`
-    } else {
-        console.log('invalid table name')
-        return;
-    }
-
 
     const payload = { sql: sqlQuery };
 
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload),
-      });
-      response.raise_for_status();
-      console.log(`Data inserted successfully to table ${tableName}`);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload),
+        });
+      if(!response.ok){
+        const error = await response.text();
+           console.error(`Failed to insert data: ${response.status} ${response.statusText} ${error}`);
+           throw new Error(`Failed to insert data: ${response.status} ${response.statusText} ${error}`)
+
+      }
+        const data = await response.json();
+      if(data.success){
+           console.log('Data inserted successfully.');
+      } else {
+         console.error(`Failed to insert data: ${data.errors[0].message}`);
+         throw new Error(`Failed to insert data: ${data.errors[0].message}`)
+      }
+
     } catch (error) {
-      console.error(`Failed to insert data to table ${tableName}: ${error}`);
+        console.error(`Failed to insert data: ${error}`);
+      throw error
     }
   }
   async function saveCsvToD1(filePath) {
-      try {
-        const csvFile = await fs.readFile(filePath, { encoding: 'utf8' });
-        const { data } = parse(csvFile, { header: true })
-        await insertIntoD1(data, 'ios_app_data')
-      } catch (error) {
-        console.error(`Error reading CSV file '${filePath}': ${error}`);
-      }
+    try {
+      const csvFile = await fs.readFile(filePath, { encoding: 'utf8' });
+      const { data } = parse(csvFile, { header: true })
+      const sqlQuery = `INSERT INTO ios_app_data (platform, type, cid, cname, rank, appid, appname, icon, link, title, updateAt, country, alsoBought) VALUES ${data
+        .map(
+          (row) =>
+            `('${row.platform}', '${row.type}', '${row.cid}', '${row.cname}', ${row.rank}, '${row.appid}', '${row.appname}', '${row.icon}', '${row.link}', '${row.title}', '${row.updateAt}', '${row.country}', '${row.alsoBought ? row.alsoBought.join(',') : null}')`
+        )
+        .join(', ')};`;
+
+     await insertIntoD1(sqlQuery)
+    } catch (error) {
+      console.error(`Error reading CSV file '${filePath}': ${error}`);
     }
+  }
+
 
 async function getAppDetails(appId, country){
   try {
@@ -116,43 +116,50 @@ async function getSearchSuggestions(keyword) {
       return [];
     }
   }
-  async function getReview(appId, country, keyword, appName, outfile) {
-      try {
-          let allReviews = [];
-         let page = 1;
-         while (true) {
-           const reviews = await store.reviews({
-               appId,
-                country: country,
-                page: page,
-             });
+async function getReview(appId, country, keyword, appName, outfile) {
+    try {
+        let allReviews = [];
+       let page = 1;
+       while (true) {
+         const reviews = await store.reviews({
+             appId,
+              country: country,
+              page: page,
+           });
 
-              if (!reviews || reviews.length === 0) {
-                break;
-               }
-               allReviews.push(...reviews)
-              page++
-         }
-            const items = allReviews.map(review => {
-                return {
-                    appid: appId,
-                    appname: appName,
-                    country: country,
-                    keyword: keyword,
-                    score: review.score,
-                    userName: review.userName?.trim(),
-                    date: new Date(review.updated).toISOString(),
-                   review: review.text?.replace('\r', ' ').replace('\n', ' ').trim()
-               }
-            });
-            items.forEach(item => outfile.push(item))
-          return items
-      } catch (error) {
-        console.error(`Error fetching reviews for app '${appId}': ${error}`);
-        return []
-    }
+            if (!reviews || reviews.length === 0) {
+              break;
+             }
+             allReviews.push(...reviews)
+            page++
+       }
+          const items = allReviews.map(review => {
+              return {
+                  appid: appId,
+                  appname: appName,
+                  country: country,
+                  keyword: keyword,
+                  score: review.score,
+                  userName: review.userName?.trim(),
+                  date: new Date(review.updated).toISOString(),
+                 review: review.text?.replace('\r', ' ').replace('\n', ' ').trim()
+             }
+          });
+          items.forEach(item => outfile.push(item))
+        return items
+    } catch (error) {
+      console.error(`Error fetching reviews for app '${appId}': ${error}`);
+      return []
   }
+}
+async function insertIntoIosReviewData(data) {
 
+    const sqlQuery = `INSERT INTO ios_review_data (appid, appname, country, keyword, score, userName, date, review) VALUES ${data.map(
+      (row) =>
+        `('${row.appid}', '${row.appname}', '${row.country}', '${row.keyword}', ${row.score}, '${row.userName}', '${row.date}', '${row.review}')`
+    ).join(',')};`;
+   await insertIntoD1(sqlQuery)
+}
 async function main() {
     try {
         await fs.mkdir(RESULT_FOLDER, { recursive: true });
@@ -226,29 +233,29 @@ async function main() {
             }
         }
         const outfilePath = path.join(RESULT_FOLDER,`app-details-${current_time}.json`);
-        const outfileReviewsPath = path.join(RESULT_FOLDER,`${KEYWORD}-app-reviews-${current_time}.json`);
-
+          const outfileReviewsPath = path.join(RESULT_FOLDER,`${KEYWORD}-app-reviews-${current_time}.json`);
         const outfileReviews = [];
-
+    
         if (SAVE_LOCATION === 'local' || SAVE_LOCATION === 'both') {
-            await fs.writeFile(outfilePath, JSON.stringify(outfile, null, 2));
-        }
-        for (const appDetail of outfile){
-             const reviews=await getReview(appDetail.appid, appDetail.country, KEYWORD, appDetail.appname, outfileReviews )
-            }
-        if (SAVE_LOCATION === 'local' || SAVE_LOCATION === 'both') {
-            await fs.writeFile(outfileReviewsPath, JSON.stringify(outfileReviews, null, 2));
-        }
-        if(SAVE_LOCATION === 'd1' || SAVE_LOCATION === 'both'){
-          const csvPath = path.join(RESULT_FOLDER, `app_data_${current_time}.csv`);
-            const csvContent = parse(JSON.stringify(outfile), {header:true,}).data
-            await fs.writeFile(csvPath, csvContent);
-            await saveCsvToD1(csvPath)
-          if (outfileReviews && outfileReviews.length>0) {
-                await insertIntoD1(outfileReviews, 'ios_review_data')
+             await fs.writeFile(outfilePath, JSON.stringify(outfile, null, 2));
+          }
+          for (const appDetail of outfile){
+            const reviews=await getReview(appDetail.appid, appDetail.country, KEYWORD, appDetail.appname, outfileReviews )
           }
 
+        if (SAVE_LOCATION === 'local' || SAVE_LOCATION === 'both') {
+              await fs.writeFile(outfileReviewsPath, JSON.stringify(outfileReviews, null, 2));
         }
+
+      if (SAVE_LOCATION === 'd1' || SAVE_LOCATION === 'both') {
+            const csvPath = path.join(RESULT_FOLDER, `app_data_${current_time}.csv`);
+            const csvContent = parse(JSON.stringify(outfile), {header:true,}).data
+          await fs.writeFile(csvPath, csvContent);
+          await saveCsvToD1(csvPath)
+         if (outfileReviews && outfileReviews.length>0) {
+                await insertIntoIosReviewData(outfileReviews)
+          }
+      }
 
     } catch (error) {
         console.error(`Error in main execution: ${error}`);
