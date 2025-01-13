@@ -107,7 +107,7 @@ Categorization: Leverages GPT-4 to categorize reviews into various feedback type
 
 
 https://github.com/facundoolano/app-store-scraper?tab=readme-ov-file#readme  
-
+https://github.com/jbigman/app-store-scraper
 * max 500 review per id
 
 *  from appid to more basicinfo:
