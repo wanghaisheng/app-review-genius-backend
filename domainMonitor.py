@@ -237,17 +237,22 @@ def main():
     """主函数"""
     # 创建监控器实例
     monitor = DomainMonitor()
+    expression=os.getenv('expression','intitle:"sprunki"')
+    if expression =='':
+        return
     sites=[
       'apps.apple.com',
       'play.google.com'
     ]
     advanced_queries = {
-        'apps.apple.com': 'intitle:"new game" site:apps.apple.com',
-        'play.google.com': 'inurl:"new-game" site:play.google.com'
+        'apps.apple.com': f'{expression} site:apps.apple.com',
+        'play.google.com': f'{expression} site:play.google.com'
     }
+    
     # 开始监控
     results_df = monitor.monitor_all_sites(advanced_queries=advanced_queries)
-    
+    os.mkdirs('result',exist_ok=True)
+    results_df.to_csv('result/report.csv')
     # 输出统计信息
     if not results_df.empty:
         print("\n=== 监控统计 ===")
