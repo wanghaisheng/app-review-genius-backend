@@ -41,7 +41,7 @@ class DomainMonitor:
             if os.getenv('sites') is None or os.getenv('sites')=='':
                 
                 with open(filename, 'r', encoding='utf-8') as f:
-                sites= [line.strip() for line in f if line.strip()]
+                    sites= [line.strip() for line in f if line.strip()]
             else:
                 sites=os.getenv('sites')
                 if ',' in sites:
