@@ -289,6 +289,7 @@ async def main():
             print(f"No apps found for urls '{urls}'")
         print('found urls in input',cleanurls)
         totalurls.extend(cleanurls)
+        totalurls=[url.replace('https://','') for url in totalurls]
         print(f'found  all app urls from keyword and input:{totalurls}')
         
         if not totalurls:
