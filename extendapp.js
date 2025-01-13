@@ -1,5 +1,4 @@
 const store = require('app-store-scraper');
-const fetch = require('node-fetch');
 const { parse } = require('papaparse')
 const fs = require('node:fs/promises');
 const path = require('node:path');
@@ -17,39 +16,38 @@ const URLS = process.env.URLS || '';
 const SAVE_LOCATION = process.env.SAVE_LOCATION || 'local'; // Default to local
 
 async function insertIntoD1(sqlQuery) {
-    const url = `${CLOUDFLARE_BASE_URL}/query`;
-    const headers = {
-        Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
-        'Content-Type': 'application/json',
-    };
+  try {
+        const fetchModule = await import('node-fetch')
+      const fetch = fetchModule.default
 
-    const payload = { sql: sqlQuery };
-
-    try {
+        const url = `${CLOUDFLARE_BASE_URL}/query`;
+        const headers = {
+            Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
+            'Content-Type': 'application/json',
+        };
+        const payload = { sql: sqlQuery };
         const response = await fetch(url, {
             method: 'POST',
             headers,
             body: JSON.stringify(payload),
         });
-      if(!response.ok){
-        const error = await response.text();
-           console.error(`Failed to insert data: ${response.status} ${response.statusText} ${error}`);
-           throw new Error(`Failed to insert data: ${response.status} ${response.statusText} ${error}`)
-
-      }
+        if(!response.ok){
+            const error = await response.text();
+            console.error(`Failed to insert data: ${response.status} ${response.statusText} ${error}`);
+            throw new Error(`Failed to insert data: ${response.status} ${response.statusText} ${error}`)
+        }
         const data = await response.json();
-      if(data.success){
-           console.log('Data inserted successfully.');
-      } else {
-         console.error(`Failed to insert data: ${data.errors[0].message}`);
-         throw new Error(`Failed to insert data: ${data.errors[0].message}`)
-      }
-
+        if(data.success){
+             console.log('Data inserted successfully.');
+        } else {
+          console.error(`Failed to insert data: ${data.errors[0].message}`);
+          throw new Error(`Failed to insert data: ${data.errors[0].message}`)
+        }
     } catch (error) {
         console.error(`Failed to insert data: ${error}`);
-      throw error
+        throw error
     }
-  }
+}
   async function saveCsvToD1(filePath) {
     try {
       const csvFile = await fs.readFile(filePath, { encoding: 'utf8' });
@@ -66,8 +64,6 @@ async function insertIntoD1(sqlQuery) {
       console.error(`Error reading CSV file '${filePath}': ${error}`);
     }
   }
-
-
 async function getAppDetails(appId, country){
   try {
     const appDetail = await store.app({
@@ -153,12 +149,18 @@ async function getReview(appId, country, keyword, appName, outfile) {
   }
 }
 async function insertIntoIosReviewData(data) {
+   try {
+     const fetchModule = await import('node-fetch')
+    const fetch = fetchModule.default
+         const sqlQuery = `INSERT INTO ios_review_data (appid, appname, country, keyword, score, userName, date, review) VALUES ${data.map(
+            (row) =>
+              `('${row.appid}', '${row.appname}', '${row.country}', '${row.keyword}', ${row.score}, '${row.userName}', '${row.date}', '${row.review}')`
+          ).join(',')};`;
+        await insertIntoD1(sqlQuery)
+     } catch (error) {
+      console.error(`Error insert into review data ${error}`);
+    }
 
-    const sqlQuery = `INSERT INTO ios_review_data (appid, appname, country, keyword, score, userName, date, review) VALUES ${data.map(
-      (row) =>
-        `('${row.appid}', '${row.appname}', '${row.country}', '${row.keyword}', ${row.score}, '${row.userName}', '${row.date}', '${row.review}')`
-    ).join(',')};`;
-   await insertIntoD1(sqlQuery)
 }
 async function main() {
     try {
