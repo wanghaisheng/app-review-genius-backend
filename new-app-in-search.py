@@ -416,12 +416,12 @@ async def main():
             new_items=[]
             # results=results[:10]
             
-            if results and len(results)>1:
+            if results and results.shape[0]>1:
                 gindex=int(datetime.now().strftime('%Y%m%d'))
                 items=[]
-                for i in results:
+                for index, row in df.iterrows():
                     item={}
-                    url=i.get('url')
+                    url=row.get('url')
                     if '?' in url:
                         url=url.split('?')[0]
                     appname=url.replace(baseUrl,'').split('/')
