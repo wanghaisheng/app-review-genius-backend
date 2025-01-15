@@ -399,6 +399,9 @@ async def main():
             d=DomainMonitor()
             search_urls=[]
             expression=os.getenv('expression','')
+            sites=[
+      'apps.apple.com']
+            d.sites=sites
 
             advanced_queries = {        
                     'apps.apple.com': f'{expression} site:apps.apple.com',
