@@ -398,7 +398,15 @@ async def main():
         if supportgooglesearch:
             d=DomainMonitor()
             search_urls=[]
-            results=d.monitor_site(site=baseUrl,time_range='24h')
+            expression=os.getenv('expression','')
+
+            advanced_queries = {        
+                    'apps.apple.com': f'{expression} site:apps.apple.com',
+                    # 'play.google.com': f'{expression} site:play.google.com'
+                
+                                   }
+
+            results=d.monitor_all_sites(advanced_queries=advanced_queries,time_range='24h')
             print('==',results)
             print("[INFO] google search check  complete.")
             new_apps_urls=[]
