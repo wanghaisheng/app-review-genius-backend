@@ -1,4 +1,4 @@
-name: save Tranco Rank daily
+name: save sitemap allapps daily
 on:
   schedule:
     # At 5am every day (for daily analysis)
@@ -23,7 +23,7 @@ jobs:
           node-version: 'lts/*'
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm  install axios xml2js dotenv fs zlib util
       - name: Save Rank Data to SQLite
         if: matrix.analysisType == 'daily' # Only save once a day.
         run: |
