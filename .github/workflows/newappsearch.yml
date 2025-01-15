@@ -3,7 +3,7 @@ name: update new app in search daily
 on:
   workflow_dispatch:  # Trigger manually
   schedule:
-    - cron: "* 0/6 * * *"
+    - cron: "0 */6 * * *"
 
 jobs:
   scrape-app-store:
