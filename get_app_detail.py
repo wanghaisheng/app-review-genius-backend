@@ -132,15 +132,20 @@ def getinfo(url):
             rating=0
             if tab.ele('.we-customer-ratings__averages'):
                 rating=tab.ele('.we-customer-ratings__averages').text
-            reviewcount=0
+            reviewcount=''
             if tab.ele('.we-customer-ratings__count small-hide medium-show'):
 
                 reviewcount=tab.ele('.we-customer-ratings__count small-hide medium-show').text
             print('find rating',rating)
-            reviewcount=reviewcount.replace('Ratings','')
-            reviewcount=reviewcount.lower()
+            if isinstance(reviewcount, str):
+            
+                reviewcount=reviewcount.replace('Ratings','')
+                reviewcount=reviewcount.lower()
             print('find reviewcount',reviewcount)
-
+            
+            if reviewcount=='':
+                reviewcount=0
+            reviewcount=int(reviewcount)
             if 'm' in reviewcount:
                 reviewcount=reviewcount.replace('m','').strip()
                 print('replace m with ',reviewcount)
