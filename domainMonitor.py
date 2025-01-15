@@ -161,7 +161,7 @@ class DomainMonitor:
         cleaned_title = re.sub(r'(攻略|评测|资讯|下载|官网|专区|合集|手游|网游|页游|主机游戏|单机游戏)', '', title)
         return cleaned_title.strip()
 
-    def monitor_site(self, site, time_range, max_pages=100,advanced_query=None):
+    def monitor_site_old(self, site, time_range, max_pages=100,advanced_query=None):
         """
         监控单个网站，考虑分页
         :param site: 网站域名
@@ -202,6 +202,65 @@ class DomainMonitor:
                  self.logger.error(f"Error processing page {page + 1} for {site}: {str(e)}")
                  break # if there are any other exceptions when processing the results then break
                  
+
+        return all_results
+
+    def monitor_site(self, site, time_range, max_pages=100, advanced_query=None):
+        """
+        Monitor a site for search results over multiple pages.
+        :param site: The domain of the site to monitor.
+        :param time_range: The time range to filter the search results.
+        :param max_pages: The maximum number of pages to fetch.
+        :param advanced_query: Optional advanced search query.
+        :return: A list of search results.
+        """
+        all_results = []
+        total_pages = max_pages  # Default to max_pages if result count cannot be determined
+
+        for page in range(max_pages):
+            start = page * 100  # Google default 100 results per page
+            if advanced_query:
+                search_url = self.build_google_advanced_search_url(advanced_query, time_range, start)
+            else:
+                search_url = self.build_google_search_url(site, time_range, start)
+
+            self.logger.info(f"Monitoring {site} for {time_range}, page {page + 1}")
+
+            try:
+                response = requests.get(search_url, headers=self.headers)
+                response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+
+                if page == 0:  # Extract total result count only on the first page
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    result_stats = soup.select_one('#result-stats')
+                    if result_stats:
+                        match = re.search(r'About ([\d,]+) results', result_stats.text)
+                        if match:
+                            total_results = int(match.group(1).replace(',', ''))
+                            total_pages = min(max_pages, (total_results // 100) + 1)
+                            self.logger.info(f"Total results: {total_results}, Total pages: {total_pages}")
+
+                results = self.extract_search_results(response.text)
+                if not results:  # If no results are found for a page, assume there are no more pages
+                    self.logger.info(f"No more results found for {site} on page {page + 1}")
+                    break
+
+                all_results.extend(results)
+                self.logger.info(f"Found {len(results)} results for {site} on page {page + 1}")
+
+                # Random delay to avoid requests being too fast
+                time.sleep(random.uniform(2, 5))
+
+                if page + 1 >= total_pages:
+                    self.logger.info(f"Reached the last page based on total results for {site}")
+                    break
+
+            except requests.exceptions.RequestException as e:
+                self.logger.error(f"Error fetching page {page + 1} for {site}: {str(e)}")
+                break  # If a page cannot be fetched, then break
+            except Exception as e:
+                self.logger.error(f"Error processing page {page + 1} for {site}: {str(e)}")
+                break  # If there are any other exceptions when processing the results, then break
 
         return all_results
     
