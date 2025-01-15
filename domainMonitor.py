@@ -104,7 +104,7 @@ class DomainMonitor:
         return cleaned_title.strip()
 
 
-    def monitor_site(self, site, time_range, max_pages=100, advanced_query=None):
+    def monitor_site_new(self, site, time_range, max_pages=100, advanced_query=None):
         """
         Monitor a site for search results over multiple pages.
         :param site: The domain of the site to monitor.
