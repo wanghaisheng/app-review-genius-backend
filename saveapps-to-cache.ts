@@ -33,74 +33,72 @@ try {
         `
         CREATE TABLE IF NOT EXISTS domains (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            domain TEXT UNIQUE NOT NULL
+            url TEXT UNIQUE NOT NULL
         )
         `
     ).run();
-        console.log("Domains table created/verified.");
+    console.log("Domains table created/verified.");
 
     db.prepare(
         `
-            CREATE TABLE IF NOT EXISTS ranks (
-                id INTEGER NOT NULL,
-                rank INTEGER NOT NULL,
-                date TEXT NOT NULL,
-                FOREIGN KEY (id) REFERENCES domains(id)
-            )
+        CREATE TABLE IF NOT EXISTS ranks (
+            id INTEGER NOT NULL,
+            lastmodify TEXT NOT NULL,
+            date TEXT NOT NULL,
+            FOREIGN KEY (id) REFERENCES domains(id)
+        )
         `
     ).run();
     console.log("Ranks table created/verified.");
 
 } catch (error) {
     console.error(`Error creating tables:`, error);
-    process.exit(1)
+    process.exit(1);
 }
-
 
 // Load domain IDs from db
 const domainIdMap = new Map<string, number>();
 let maxId = 0;
 
 try {
-    console.log("Loading existing domain IDs from database...")
+    console.log("Loading existing domain IDs from database...");
     const domainIdRecords = db
-        .prepare("SELECT id, domain FROM domains")
-        .all() as { id: number, domain: string }[];
-    for(const {id, domain} of domainIdRecords) {
-        domainIdMap.set(domain, id)
+        .prepare("SELECT id, url FROM domains")
+        .all() as { id: number, url: string }[];
+    for(const {id, url} of domainIdRecords) {
+        domainIdMap.set(url, id);
     }
-    maxId = Math.max(0, ...domainIdRecords.map(record => record.id))
-    console.log(`Loaded ${domainIdRecords.length} domain IDs.`)
+    maxId = Math.max(0, ...domainIdRecords.map(record => record.id));
+    console.log(`Loaded ${domainIdRecords.length} domain IDs.`);
 } catch (error) {
     console.error(`Error loading domain IDs from database`, error);
-    process.exit(1)
+    process.exit(1);
 }
-
 
 // Insert new domain, rank pairs into database
 const insertDomain = db.prepare(
   `
-    INSERT OR IGNORE INTO domains (domain)
-    VALUES (@domain)
+    INSERT OR IGNORE INTO domains (url)
+    VALUES (@url)
   `
 );
 
 const insertRank = db.prepare(
     `
-        INSERT INTO ranks (id, rank, date)
-        VALUES (@id, @rank, @date)
+        INSERT INTO ranks (id, lastmodify, date)
+        VALUES (@id, @lastmodify, @date)
     `
 );
 
-// Parse new domain, rank pairs from input
-let newDomainRankPairs: { rank: string; domain: string }[] = [];
+// Parse new domain, lastmodify pairs from input
+let newDomainRankPairs: { lastmodify: string; url: string }[] = [];
 
 try {
-    console.log(`Reading input CSV from ${inputFilePath}...`)
+    console.log(`Reading input CSV from ${inputFilePath}...`);
     newDomainRankPairs = parse(readFileSync(inputFilePath, 'utf-8'), {
-        columns: false,
-    }).map((row: string[]) => ({ rank: row[0], domain: row[1] }));
-    console.log(`Read ${newDomainRankPairs.length} new domain/rank pairs from CSV.`);
+        columns: true,
+    }).map((row: { url: string, lastmodify: string }) => ({ url: row.url, lastmodify: row.lastmodify }));
+    console.log(`Read ${newDomainRankPairs.length} new domain/lastmodify pairs from CSV.`);
 } catch (err) {
     console.error(
         `Error reading or parsing input CSV: ${inputFilePath}\n`,
@@ -114,34 +112,26 @@ let newDomainsCount = 0;
 try {
     console.log(`Starting database transaction...`);
     db.transaction(() => {
-        for (const { rank, domain } of newDomainRankPairs) {
-            let id = domainIdMap.get(domain);
-             if(id === undefined) {
+        for (const { lastmodify, url } of newDomainRankPairs) {
+            let id = domainIdMap.get(url);
+            if(id === undefined) {
                 maxId++;
                 id = maxId;
-                insertDomain.run({domain});
-                domainIdMap.set(domain, id);
-                 newDomainsCount++;
-                // console.log(`Inserted new domain "${domain}" with id ${id}.`);
+                insertDomain.run({url});
+                domainIdMap.set(url, id);
+                newDomainsCount++;
             }
 
-            const parsedRank = parseInt(rank)
-            if(isNaN(parsedRank)) {
-              console.warn(`Skipping rank insert as not a valid integer: ${rank}`)
-              continue;
-            }
-             insertRank.run({id, rank: parsedRank, date: new Date().toISOString().split('T')[0]});
-             // console.log(`Inserted rank: ${parsedRank} for domain "${domain}".`);
+            insertRank.run({id, lastmodify, date: new Date().toISOString().split('T')[0]});
         }
     })();
-     console.log(`Database transaction completed successfully.`);
+    console.log(`Database transaction completed successfully.`);
 } catch (error) {
     console.error("Error processing database transaction", error);
-    process.exit(1)
+    process.exit(1);
 }
 
-
-const newDomains = newDomainRankPairs.filter(({domain}) => !domainIdMap.has(domain))
+const newDomains = newDomainRankPairs.filter(({url}) => !domainIdMap.has(url));
 
 console.log(`Updated ${dbFilePath}:
 - ${newDomainsCount} new domains added
@@ -149,5 +139,5 @@ console.log(`Updated ${dbFilePath}:
 `);
 
 console.log("First 100 domain IDs");
-console.log(tableFromRecords([...domainIdMap.entries()].slice(0,100).map(([domain, id]) => ({domain, id}))));
+console.log(tableFromRecords([...domainIdMap.entries()].slice(0,100).map(([url, id]) => ({url, id}))));
 console.log("Finished saveRankData script.");
