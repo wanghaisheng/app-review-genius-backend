@@ -1,8 +1,8 @@
 name: save sitemap allapps daily
 on:
-  schedule:
+  # schedule:
     # At 5am every day (for daily analysis)
-    - cron: 0 5 * * *
+    # - cron: 0 5 * * *
   workflow_dispatch:
 
 jobs:
