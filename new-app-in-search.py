@@ -416,7 +416,7 @@ async def main():
             new_items=[]
             # results=results[:10]
             
-            if results and not results.empty and results.shape[0] > 1:
+            if  not results.empty and results.shape[0] > 1:
                 gindex=int(datetime.now().strftime('%Y%m%d'))
                 items=[]
                 for index, row in df.iterrows():
