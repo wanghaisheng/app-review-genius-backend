@@ -13,6 +13,7 @@ const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 
 const CLOUDFLARE_BASE_URL = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/d1/database/${D1_DATABASE_ID}`;
 
+// Set up gunzip for decompressing
 const gunzip = promisify(zlib.gunzip);
 
 interface AppData {
@@ -63,8 +64,16 @@ async function fetchAndParseGzip(url: string): Promise<AppData[]> {
 
 function saveToCsv(appDataList: AppData[], filename: string): void {
     const csvContent = appDataList.map(appData => `${appData.url},${appData.lastmodify}`).join('\n');
-    fs.writeFileSync(filename, csvContent);
-    console.log(`Data saved to ${filename}`);
+
+    // Ensure the directory exists
+    const directory = 'data/persisted-to-cache';
+    if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory, { recursive: true });
+    }
+
+    // Save the CSV file to the specified path
+    fs.writeFileSync(`${directory}/${filename}`, csvContent);
+    console.log(`Data saved to ${directory}/${filename}`);
 }
 
 async function processSitemapsAndSaveProfiles(): Promise<void> {
@@ -76,7 +85,8 @@ async function processSitemapsAndSaveProfiles(): Promise<void> {
         console.log(`Processing sitemap: ${locUrl}`);
         const appDataList = await fetchAndParseGzip(locUrl);
 
-        saveToCsv(appDataList, 'app_profiles.csv');
+        // Save data to the specified path (data/persisted-to-cache/database.csv)
+        saveToCsv(appDataList, 'database.csv');
     }
 }
 
