@@ -129,8 +129,13 @@ def getinfo(url):
                 priceplan=   json.dumps(priceplan_objects)  # Convert to JSON string
 
             website=tab.ele('.link icon icon-after icon-external').link
-            rating=tab.ele('.we-customer-ratings__averages').text
-            reviewcount=tab.ele('.we-customer-ratings__count small-hide medium-show').text
+            rating=0
+            if tab.ele('.we-customer-ratings__averages'):
+                rating=tab.ele('.we-customer-ratings__averages').text
+            reviewcount=0
+            if tab.ele('.we-customer-ratings__count small-hide medium-show'):
+
+                reviewcount=tab.ele('.we-customer-ratings__count small-hide medium-show').text
             print('find rating',rating)
             reviewcount=reviewcount.replace('Ratings','')
             reviewcount=reviewcount.lower()
