@@ -419,7 +419,7 @@ async def main():
             if  not results.empty and results.shape[0] > 1:
                 gindex=int(datetime.now().strftime('%Y%m%d'))
                 items=[]
-                for index, row in df.iterrows():
+                for index, row in results.iterrows():
                     item={}
                     url=row.get('url')
                     if '?' in url:
