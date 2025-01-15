@@ -35,7 +35,7 @@ class DomainMonitor:
         )
         self.logger = logging
 
-    def _load_sites(self, filename):
+    def _load_sites(self, filename='game_sites.txt'):
         """加载网站列表"""
         try:
             if os.getenv('sites') is None or os.getenv('sites')=='':
