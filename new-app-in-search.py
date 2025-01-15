@@ -409,7 +409,7 @@ async def main():
                 
                                    }
 
-            results=d.monitor_all_sites(advanced_queries=advanced_queries,time_ranges='24h')
+            results=d.monitor_all_sites(advanced_queries=advanced_queries)
             print('==',results)
             print("[INFO] google search check  complete.")
             new_apps_urls=[]
