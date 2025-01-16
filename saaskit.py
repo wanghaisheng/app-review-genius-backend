@@ -11,7 +11,7 @@ advanced_queries = {}
 for s in sites:
     advanced_queries[s] = f'{expression} site:{s}'
 
-results_df = monitor.monitor_all_sites(advanced_queries=advanced_queries)
+results_df = monitor.monitor_all_sites(time_ranges='m',advanced_queries=advanced_queries)
 os.makedirs('result', exist_ok=True)
 results_df.to_csv('result/report.csv')
 if not results_df.empty:
