@@ -1,0 +1,22 @@
+from domainMonitor import DomainMonitor
+
+
+
+monitor = DomainMonitor()
+
+expression=os.getenv('expression','intitle:"saas kit"')
+sites=['twitter.com','youtube.com']
+advanced_queries={}
+for s in sites:
+    advanced_queries.update(s)=f'{expression} site:{s}'
+
+results_df = monitor.monitor_all_sites(advanced_queries=advanced_queries)
+os.mkdirs('result',exist_ok=True)
+results_df.to_csv('result/report.csv')
+if not results_df.empty:
+    print("\n=== 监控统计 ===")
+    print(f"总计发现新页面: {len(results_df)}")
+    print(results_df['site'].value_counts())
+
+
+
