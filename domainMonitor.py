@@ -282,7 +282,7 @@ class DomainMonitor:
         :return: 包含所有结果的DataFrame
         """
         if time_ranges is None:
-            time_ranges = ['24h', '1w']
+            time_ranges = ['24h']
             
         all_results = []
         if len(self.sites)==0:
