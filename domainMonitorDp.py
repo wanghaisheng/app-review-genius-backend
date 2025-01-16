@@ -223,7 +223,7 @@ class DomainMonitor:
                             total_pages = min(max_pages, (total_results // 100) + 1)
                             self.logger.info(f"Total results: {total_results}, Total pages: {total_pages}")
 
-                results = self.extract_search_results(response.text)
+                results = self.extract_search_results(html)
                 if not results:  # If no results are found for a page, assume there are no more pages
                     self.logger.info(f"No more results found for {site} on page {page + 1}")
                     break
