@@ -187,11 +187,12 @@ class DomainMonitor:
             start = page * 100 #google default 100 results per page
             if advanced_query:
                 search_url = self.build_google_advanced_search_url(advanced_query, time_range, start)
+                self.logger.info(f"Monitoring advance url {search_url} for {time_range}, page {page+1}")
 
             else:
                  search_url = self.build_google_search_url(site, time_range, start)
 
-            self.logger.info(f"Monitoring url {search_url} for {time_range}, page {page+1}")
+                self.logger.info(f"Monitoring nomal url {search_url} for {time_range}, page {page+1}")
 
             try:
                 response = requests.get(search_url, headers=self.headers)
