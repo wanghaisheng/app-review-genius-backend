@@ -211,6 +211,7 @@ class DomainMonitor:
                 if page == 0:  # Extract total result count only on the first page
                     soup = BeautifulSoup(response.text, 'html.parser')
                     result_stats = soup.select_one('#result-stats')
+                    print('result_stats=',result_stats)
                     if result_stats:
                         match = re.search(r'About ([\d,]+) results', result_stats.text)
                         if match:
