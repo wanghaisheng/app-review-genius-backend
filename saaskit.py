@@ -4,12 +4,13 @@ from domainMonitor import DomainMonitor
 monitor = DomainMonitor()
 
 
-expression = os.getenv('expression', 'intitle:"saas kit"')
+expression = os.getenv('expression', 'intext:"saas kit"')
 sites = ['twitter.com', 'youtube.com']
 monitor.sites=sites
 advanced_queries = {}
 for s in sites:
     advanced_queries[s] = f'{expression} site:{s}'
+print('==',advanced_queries)
 
 results_df = monitor.monitor_all_sites(time_ranges=['1m'],advanced_queries=advanced_queries)
 os.makedirs('result', exist_ok=True)
