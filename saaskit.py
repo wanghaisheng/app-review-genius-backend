@@ -1,5 +1,5 @@
 import os
-from domainMonitor import DomainMonitor
+from domainMonitorDp import DomainMonitor
 
 monitor = DomainMonitor()
 
