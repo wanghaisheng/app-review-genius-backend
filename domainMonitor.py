@@ -173,7 +173,7 @@ class DomainMonitor:
         cleaned_title = re.sub(r'(攻略|评测|资讯|下载|官网|专区|合集|手游|网游|页游|主机游戏|单机游戏)', '', title)
         return cleaned_title.strip()
 
-    def monitor_site_old(self, site, time_range, max_pages=100,advanced_query=None):
+    def monitor_site(self, site, time_range, max_pages=100,advanced_query=None):
         """
         监控单个网站，考虑分页
         :param site: 网站域名
@@ -181,45 +181,7 @@ class DomainMonitor:
         :param max_pages: 最大页数
         :param advanced_query: advanced search query to use with the build_google_advanced_search_url if set, or else uses the default
         :return: 搜索结果列表
-        """
-        all_results = []
-        for page in range(max_pages):
-            start = page * 100 #google default 100 results per page
-            if advanced_query:
-                search_url = self.build_google_advanced_search_url(advanced_query, time_range, start)
-                self.logger.info(f"Monitoring advance url {search_url} for {time_range}, page {page+1}")
-
-            else:
-                search_url = self.build_google_search_url(site, time_range, start)
-
-                self.logger.info(f"Monitoring nomal url {search_url} for {time_range}, page {page+1}")
-
-            try:
-                response = requests.get(search_url, headers=self.headers)
-                response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
-                results = self.extract_search_results(response.text)
-                if not results:  # If no results are found for a page, assume there are no more pages
-                    self.logger.info(f"No more results found for {site} on page {page+1}")
-                    break
-                
-                all_results.extend(results)
-                self.logger.info(f"Found {len(results)} results for {site} on page {page+1}")
-
-                # 随机延时，避免请求过快
-                time.sleep(random.uniform(2, 5))
-
-            except requests.exceptions.RequestException as e:
-                self.logger.error(f"Error fetching page {page + 1} for {site}: {str(e)}")
-                break # if a page cannot be fetched then break
-            except Exception as e:
-                 self.logger.error(f"Error processing page {page + 1} for {site}: {str(e)}")
-                 break # if there are any other exceptions when processing the results then break
-                 
-
-        return all_results
-
-    def monitor_site(self, site, time_range, max_pages=100, advanced_query=None):
-        """
+        
         Monitor a site for search results over multiple pages.
         :param site: The domain of the site to monitor.
         :param time_range: The time range to filter the search results.
@@ -234,8 +196,11 @@ class DomainMonitor:
             start = page * 100  # Google default 100 results per page
             if advanced_query:
                 search_url = self.build_google_advanced_search_url(advanced_query, time_range, start)
+                self.logger.info(f"Monitoring advance url {search_url} for {time_range}, page {page+1}")
+                
             else:
                 search_url = self.build_google_search_url(site, time_range, start)
+                self.logger.info(f"Monitoring nomal url {search_url} for {time_range}, page {page+1}")
 
             self.logger.info(f"Monitoring {site} for {time_range}, page {page + 1}")
 
