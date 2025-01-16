@@ -65,6 +65,11 @@ class DomainMonitor:
             tbs = 'qdr:d'  # 最近24小时
         elif time_range == '1w':
             tbs = 'qdr:w'  # 最近1周
+        elif time_range=='1m':
+            tbs='qdr:m'
+        elif  time_range=='1y':
+            tbs='qdr:y'
+            
         else:
             raise ValueError("Invalid time range")
         
@@ -92,6 +97,11 @@ class DomainMonitor:
             tbs = 'qdr:d'  # 最近24小时
         elif time_range == '1w':
             tbs = 'qdr:w'  # 最近1周
+        elif time_range=='1m':
+            tbs='qdr:m'
+        elif  time_range=='1y':
+            tbs='qdr:y'
+            
         else:
             raise ValueError("Invalid time range")
 
