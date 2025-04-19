@@ -30,9 +30,21 @@ jobs:
           CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.D1_APP_DATABASE_ID }}    
           RESULT_FOLDER: ./result  # Adjust if necessary
           OUTPUT_FOLDER: ./output
-          
         run: |
           python get-top100-app-daily.py
+
+      # 新增：提交 date.txt 到仓库
+      - name: Commit and push date.txt
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git pull origin ${{ github.ref_name }}
+          cp date.txt ./date.txt
+          git add date.txt
+          git commit -m "chore: update date.txt [auto commit]" || echo "No changes to commit"
+          git push origin HEAD:${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: upload files          
         uses: actions/upload-artifact@v4
         with:
