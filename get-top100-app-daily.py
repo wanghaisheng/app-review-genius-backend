@@ -204,9 +204,6 @@ async def main():
 
             outfile_reviews.record()
 
-        # 在脚本运行结束前写入进展记录
-        with open("date.txt", "w", encoding="utf-8") as f:
-            f.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     except Exception as e:
         print(f"Error in main execution: {e}")
@@ -214,3 +211,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+    with open("date.txt", "w", encoding="utf-8") as f:
+    # 在脚本运行结束前写入进展记录
+        f.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
