@@ -7,7 +7,7 @@ import pandas as pd
 import random
 import os
 from urllib.parse import urlencode, quote_plus,quote
-from apicall import get_token,fetch_reviews
+# from apicall import get_token,fetch_reviews
 
 RESULT_FOLDER = "./result"
 OUTPUT_DIR = Path("data")
@@ -41,12 +41,13 @@ from tqdm import tqdm
 import datetime
 
 
-def get_token1(country: str, app_name: str, app_id: str, user_agents: list) -> str:
+def get_token(country: str, app_name: str, app_id: str, user_agents: list) -> str:
     """
     Retrieves the bearer token required for API requests
     Regex adapted from base.py of https://github.com/cowboy-bebug/app-store-scraper
     """
-
+    if 'id' in app_id:
+        app_id=app_id.replace('id','')        
     response = requests.get(f'https://apps.apple.com/{country}/app/{app_name}/id{app_id}',
                             headers={'User-Agent': random.choice(user_agents)},
                             )
@@ -63,11 +64,11 @@ def get_token1(country: str, app_name: str, app_id: str, user_agents: list) -> s
     if token is None:
         raise ValueError("Token not found.")
 
-    # print(f"Bearer {token}")
+    print(f"Bearer {token}")
     return token
 
 
-def fetch_reviews1(country: str,
+def fetch_reviews(country: str,
                   app_name: str,
                   app_id: str,
                   user_agents: list,
@@ -81,6 +82,8 @@ def fetch_reviews1(country: str,
     - Retry with increasing backoff if rate-limited (429)
     - No known ability to sort by date, but the higher the offset, the older the reviews tend to be
     """
+    if 'id' in app_id:
+        app_id=app_id.replace('id','')        
 
     ## Define request headers and params ------------------------------------
     landing_url = f'https://apps.apple.com/{country}/app/{app_name}/id{app_id}'
