@@ -116,6 +116,7 @@ def app_reviews():
 
                     print('apple_app_package_name>0 not support package,',apple_app_package_url,apple_app_package_name) 
                     return 
+                print('start to scrape:app_store_scraper')
                 app_store_scraper(apple_app_package_name,country,lang)
                     
         except:
