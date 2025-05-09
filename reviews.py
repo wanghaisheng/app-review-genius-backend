@@ -7,6 +7,7 @@ import pandas as pd
 import random
 import os
 from urllib.parse import urlencode, quote_plus,quote
+from apicall import get_token,fetch_reviews
 
 RESULT_FOLDER = "./result"
 OUTPUT_DIR = Path("data")
@@ -41,7 +42,28 @@ def app_store_scraper(app_name,country='us',lang='en'):
     app = AppStore(country=country,app_name=app_name)
     app.review(sleep = random.randint(3,6))
     print('get reviews count',len(app.reviews))
-    for review in app.reviews:
+    print('manual get review')
+    all_reviews=app.reviews
+
+    if len(all_reviews)==0 or all_reviews is None:
+        user_agents = [
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+    ]
+        token = get_token(country, app_name, app_id, user_agents)
+        offset = '1'
+        MAX_REVIEWS = 100000+21
+        while (offset != None) and (int(offset) <= MAX_REVIEWS):
+            reviews, offset, response_code = fetch_reviews(country=country, 
+                                                       app_name=appname, 
+                                                       user_agents=user_agents, 
+                                                       app_id=app_id, 
+                                                       token=token, 
+                                                       offset=offset)
+            all_reviews.extend(reviews)
+    for review in all_reviews:
+
+    # for review in app.reviews:
         data={}
         data['score']= review['rating']
         data['userName']= review['userName']
