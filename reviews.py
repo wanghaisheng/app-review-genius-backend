@@ -44,12 +44,12 @@ def app_store_scraper(url,country='us',lang='en'):
     
     app_id=url.split('/')[-1]
     
-    app = AppStore(country=country,app_name=appname)
-    app.review(sleep = random.randint(3,6))
-    print('get reviews count',len(app.reviews))
+    # app = AppStore(country=country,app_name=appname)
+    # app.review(sleep = random.randint(3,6))
+    # print('get reviews count',len(app.reviews))
     print('manual get review')
-    all_reviews=app.reviews
-
+    # all_reviews=app.reviews
+    all_reviews=[]
     if len(all_reviews)==0 or all_reviews is None:
         user_agents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
