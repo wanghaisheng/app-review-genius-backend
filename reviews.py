@@ -34,9 +34,10 @@ def app_store_scraper(app_name,country='us',lang='en'):
         print('url encode app name',quote(app_name))
         app_name=quote(app_name)
         lang='zh-Hans-CN'
+    print('construct AppStore',AppStore)
     app = AppStore(country=country,app_name=app_name)
     app.review(sleep = random.randint(3,6))
-
+    print('get reviews count',len(app.reviews))
     for review in app.reviews:
         data={}
         data['score']= review['rating']
