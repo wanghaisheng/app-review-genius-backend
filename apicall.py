@@ -134,7 +134,7 @@ def fetch_reviews(country: str, app_name: str, app_id: str, user_agents: dict, t
                     response = client.get(requestUrl, headers=headers, params=params)
                response.raise_for_status()
 
-
+            print('requestUrl',response.status_code)
            # SUCCESS
            if response.status_code == 200:
                 result = response.json()
