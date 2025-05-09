@@ -8,6 +8,9 @@ import random
 import os
 from urllib.parse import urlencode, quote_plus,quote
 
+RESULT_FOLDER = "./result"
+OUTPUT_DIR = Path("data")
+os.makedirs(RESULT_FOLDER, exist_ok=True)
 
 googlerows = []
 def play_store_scraper(package,country='us',lang='en'):
@@ -127,10 +130,7 @@ def app_reviews():
 #huawei  xiaomi samsung
 
 
-RESULT_FOLDER = "./result"
 
-OUTPUT_DIR = Path("data")
-os.makedirs(RESULT_FOLDER, exist_ok=True)
 
 
 app_reviews()
