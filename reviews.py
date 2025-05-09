@@ -66,6 +66,7 @@ def app_store_scraper(url,country='us',lang='en'):
                                                        token=token, 
                                                        offset=offset)
             all_reviews.extend(reviews)
+    print('api callendds',all_reviews)
     for review in all_reviews:
 
     # for review in app.reviews:
