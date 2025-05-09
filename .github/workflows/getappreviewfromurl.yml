@@ -34,7 +34,8 @@ jobs:
           python-version: '3.9'
 
       - name: Install all necessary packages
-        run: pip install google-play-scraper app_store_scraper pandas 
+        # run: pip install google-play-scraper app_store_scraper pandas 
+        run: pip install httpx google-play-scraper pandas aiohttp aiohttp_socks DataRecorder pandas DrissionPage python-dotenv app_store_scraper requests tqdm
 
       - name: Sanitize input URLs to create valid artifact name
         id: sanitize_url
