@@ -51,11 +51,12 @@ def app_store_scraper(url,country='us',lang='en'):
     # all_reviews=app.reviews
     all_reviews=[]
     if len(all_reviews)==0 or all_reviews is None:
-        print('==1')
         user_agents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
     ]
+        print('==1',country,appname,app_id)
+
         token = get_token(country, appname, app_id, user_agents)
         print('===2')
         offset = '1'
