@@ -7,7 +7,7 @@ import pandas as pd
 import random
 import os
 from urllib.parse import urlencode, quote_plus,quote
-# from apicall import get_token,fetch_reviews
+from apicall import get_token,fetch_reviews
 
 RESULT_FOLDER = "./result"
 OUTPUT_DIR = Path("data")
@@ -41,7 +41,7 @@ from tqdm import tqdm
 import datetime
 
 
-def get_token(country: str, app_name: str, app_id: str, user_agents: list) -> str:
+def get_token1(country: str, app_name: str, app_id: str, user_agents: list) -> str:
     """
     Retrieves the bearer token required for API requests
     Regex adapted from base.py of https://github.com/cowboy-bebug/app-store-scraper
@@ -67,7 +67,7 @@ def get_token(country: str, app_name: str, app_id: str, user_agents: list) -> st
     return token
 
 
-def fetch_reviews(country: str,
+def fetch_reviews1(country: str,
                   app_name: str,
                   app_id: str,
                   user_agents: list,
