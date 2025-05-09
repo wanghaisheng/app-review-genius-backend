@@ -58,7 +58,7 @@ def app_store_scraper(url,country='us',lang='en'):
         print('==1',country,appname,app_id)
 
         token = get_token(country, appname, app_id, user_agents)
-        print('===2')
+        print('===2',token)
         offset = '1'
         MAX_REVIEWS = 100000+21
         while (offset != None) and (int(offset) <= MAX_REVIEWS):
