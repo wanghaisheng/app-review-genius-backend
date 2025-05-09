@@ -54,6 +54,8 @@ def get_token(country: str, app_name: str, app_id: str, user_agents: dict, proxy
     proxies = load_proxies(proxy_source)
     proxy = random.choice(proxies) if proxies else None
     response = None
+    if 'id' in app_id:
+        app_id=app_id.replace('id','')
     try:
         with httpx.Client() as client:
             if proxy:
