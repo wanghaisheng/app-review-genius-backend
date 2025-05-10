@@ -48,12 +48,13 @@ def get_token(country: str, app_name: str, app_id: str, user_agents: list) -> st
     """
     if 'id' in app_id:
         app_id=app_id.replace('id','')        
+    print('url',f'https://apps.apple.com/{country}/app/{app_name}/id{app_id}')
     response = requests.get(f'https://apps.apple.com/{country}/app/{app_name}/id{app_id}',
                             headers={'User-Agent': random.choice(user_agents)},
                             )
 
     if response.status_code != 200:
-        print(f"GET request failed. Response: {response.status_code} {response.reason}")
+        print(f"GET get_token request failed. Response: {response.status_code} {response.reason}")
 
     token = None
     tags = response.text.splitlines()
