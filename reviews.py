@@ -65,7 +65,7 @@ def get_token(country: str, app_name: str, app_id: str, user_agents: list) -> st
     if token is None:
         raise ValueError("Token not found.")
 
-    print(f"Bearer {token}")
+    print('token get',f"Bearer {token}")
     return token
 
 
@@ -89,7 +89,9 @@ def fetch_reviews(country: str,
     ## Define request headers and params ------------------------------------
     landing_url = f'https://apps.apple.com/{country}/app/{app_name}/id{app_id}'
     request_url = f'https://amp-api.apps.apple.com/v1/catalog/{country}/apps/{app_id}/reviews'
-
+    print('landing_url',landing_url)
+    print('request_url',request_url)
+                      
     MAX_RETURN_LIMIT = '20'
 
     headers = {
@@ -134,7 +136,7 @@ def fetch_reviews(country: str,
 
         # FAILURE
         elif response.status_code != 200:
-            print(f"GET request failed. Response: {response.status_code} {response.reason}")
+            print(f"GET request_url request failed. Response: {response.status_code} {response.reason}")
 
             # RATE LIMITED
             if response.status_code == 429:
