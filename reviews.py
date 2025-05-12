@@ -8,7 +8,7 @@ import random
 import os
 from urllib.parse import urlencode, quote_plus,quote
 # from apicall import get_token,fetch_reviews
-
+from fetch_token import fetch_media_api_token
 RESULT_FOLDER = "./result"
 OUTPUT_DIR = Path("data")
 os.makedirs(RESULT_FOLDER, exist_ok=True)
@@ -261,7 +261,8 @@ def app_store_scraper(url,country='us',lang='en'):
     ]
         print('==1',country,appname,app_id)
 
-        token = get_token(country, appname, app_id, user_agents)
+        # token = get_token(country, appname, app_id, user_agents)
+        token=fetch_media_api_token()
         print('===2',token)
         offset = '1'
         MAX_REVIEWS = 100000+21
