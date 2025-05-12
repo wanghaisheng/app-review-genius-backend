@@ -249,7 +249,7 @@ def app_store_scraper(url,country='us',lang='en'):
     
     app_id=url.split('/')[-1]
     
-    app = AppStore(country=country,app_name=appname)
+    app = AppStore(country=country,app_id=app_id,app_name=appname)
     app.review(sleep = random.randint(3,6))
     print('get reviews count',len(app.reviews))
     print('manual get review')
