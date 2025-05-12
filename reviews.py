@@ -9,7 +9,7 @@ import os
 from urllib.parse import urlencode, quote_plus,quote
 # from apicall import get_token,fetch_reviews
 from fetch_token import fetch_media_api_token
-
+from fetch_review import App_Store_Scraper
 RESULT_FOLDER = "./result"
 OUTPUT_DIR = Path("data")
 os.makedirs(RESULT_FOLDER, exist_ok=True)
