@@ -237,7 +237,7 @@ def start_fetching(app_list,
     master_path = f"../data/{current_date}_all_reviews.csv"
     df.to_csv(master_path, index=False, sep=";", encoding="utf-8")
     print(f"Saved all apps data to '{master_path}'.")
-def app_store_scraper(url,country='us',lang='en'):
+def start_app_store_scraper(url,country='us',lang='en'):
     appname, country = url.split('/')[-2], url.split('/')[-4]
     
     if country=='cn':
@@ -338,13 +338,13 @@ def app_reviews():
                 if '?' in apple_app_package_url:
                     apple_app_package_url=apple_app_package_url.split('?')[0]
                 
-                apple_app_package_name=apple_app_package_url.split('/')[-2]
+                # apple_app_package_name=apple_app_package_url.split('/')[-2]
                 # if not len(apple_app_package_name)>0:
 
                     # print('apple_app_package_name>0 not support package,',apple_app_package_url,apple_app_package_name) 
                     # return 
                 print('start to scrape:app_store_scraper')
-                app_store_scraper(apple_app_package_url,country,lang)
+                start_app_store_scraper(apple_app_package_url,country,lang)
                     
         except:
             print('apple_app_package_url exception not support package,',apple_app_package_url,apple_app_package_name)        
