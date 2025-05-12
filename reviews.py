@@ -9,6 +9,7 @@ import os
 from urllib.parse import urlencode, quote_plus,quote
 # from apicall import get_token,fetch_reviews
 from fetch_token import fetch_media_api_token
+
 RESULT_FOLDER = "./result"
 OUTPUT_DIR = Path("data")
 os.makedirs(RESULT_FOLDER, exist_ok=True)
@@ -248,38 +249,19 @@ def app_store_scraper(url,country='us',lang='en'):
     
     app_id=url.split('/')[-1]
     
-    # app = AppStore(country=country,app_name=appname)
-    # app.review(sleep = random.randint(3,6))
-    # print('get reviews count',len(app.reviews))
+    app = AppStore(country=country,app_name=appname)
+    app.review(sleep = random.randint(3,6))
+    print('get reviews count',len(app.reviews))
     print('manual get review')
-    # all_reviews=app.reviews
-    all_reviews=[]
-    if len(all_reviews)==0 or all_reviews is None:
-        user_agents = [
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
-    ]
-        print('==1',country,appname,app_id)
+    all_reviews=app.reviews
+    if all_review ==[]:
 
-        # token = get_token(country, appname, app_id, user_agents)
-        token=fetch_media_api_token()
-        print('===2',token)
-        offset = '1'
-        MAX_REVIEWS = 100000+21
-        while (offset != None) and (int(offset) <= MAX_REVIEWS):
-            reviews, offset, response_code = fetch_reviews(country=country, 
-                                                       app_name=appname, 
-                                                       app_id=app_id, 
-                                                       user_agents=user_agents, 
-
-                                                        token=token, 
-                                                       offset=offset)
-            print('===3')
-            all_reviews.extend(reviews)
-    print('api callendds',all_reviews)
+        scraper_instance = App_Store_Scraper(country=country,app_id=app_id, app_name=appname)
+        scraper_instance.review(num_pages=10, max_rating=1, after=None, sleep=1)
+        all_reviews=all_reviews.reviews
+    print('itune api api ',all_reviews)
     for review in all_reviews:
 
-    # for review in app.reviews:
         data={}
         data['score']= review['rating']
         data['userName']= review['userName']
