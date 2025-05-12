@@ -145,11 +145,11 @@ class App_Store_Scraper:
                         continue
                     
                     review_data = {
-                        'author_name': entry['author']['name']['label'],
+                        'userName': entry['author']['name']['label'],
                         'author_uri': entry['author']['uri']['label'],
-                        'content': entry['content']['label'],
+                        'review': entry['content']['label'],
                         'id': entry['id']['label'],
-                        # 'rating': entry['im:rating']['label'],
+                        'rating': entry['im:rating']['label'],
                         # 'version': entry['im:version']['label'],
                         # 'vote_count': entry['im:voteCount']['label'],
                         # 'vote_sum': entry['im:voteSum']['label'],
