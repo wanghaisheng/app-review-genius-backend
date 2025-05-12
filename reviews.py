@@ -252,7 +252,7 @@ def start_app_store_scraper(url,country='us',lang='en'):
     result = AppStore(country=country,app_id=app_id.replace("id",""),app_name=appname)
     result.review(sleep = random.randint(3,6))
 
-    result.reviews.sort(key=sortFn, reverse=True)
+    # result.reviews.sort(key=sortFn, reverse=True)
     print('get reviews count',len(result.reviews))
     all_reviews=result.reviews
 
