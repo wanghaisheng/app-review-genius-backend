@@ -249,17 +249,16 @@ def start_app_store_scraper(url,country='us',lang='en'):
     
     app_id=url.split('/')[-1]
     
-    result = AppStore(country=country,app_id=app_id.replace("id",""),app_name=appname)
+    result = AppStore(country=country,app_name=appname)
     result.review(sleep = random.randint(3,6))
 
-    # result.reviews.sort(key=sortFn, reverse=True)
     print('get reviews count',len(result.reviews))
     all_reviews=result.reviews
 
     if all_reviews ==[]:
         print('manual get review')
 
-        scraper_instance = App_Store_Scraper(country=country,app_id=app_id, app_name=appname)
+        scraper_instance = App_Store_Scraper(country=country,app_id=app_id.replace("id",""), app_name=appname)
         scraper_instance.review(num_pages=10, max_rating=1, after=None, sleep=1)
         all_reviews=all_reviews.reviews
     print('itune api api ',all_reviews)
