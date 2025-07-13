@@ -3,7 +3,7 @@ name: update topios100 daily
 on:
   workflow_dispatch:  # Trigger manually
   schedule:
-    - cron: "00 12 * * *"
+    - cron: "00 12  * *"
 
 jobs:
   scrape-app-store:
@@ -39,8 +39,8 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           git pull origin ${{ github.ref_name }}
-          mv date.txt ./date.txt
-          git add date.txt
+          # mv date.txt ./date.txt
+          git add -A
           git commit -m "chore: update date.txt [auto commit]" || echo "No changes to commit"
           git push origin HEAD:${{ github.ref_name }}
         env:
